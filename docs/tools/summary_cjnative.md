@@ -1,0 +1,6 @@
+- [工具使用指南](source_zh_cn/command_line_overview.md)
+    - [包管理工具](source_zh_cn/cmd-tools/cjpm_manual.md)
+    - [调试工具](source_zh_cn/cmd-tools/cjdb_manual.md)
+    - [格式化工具](source_zh_cn/cmd-tools/cjfmt_manual.md)
+    - [HLE工具](source_zh_cn/cmd-tools/HLE_manual.md)
+    - [语言服务器工具](source_zh_cn/cangjie-language-server/LSPServer_manual.md)
