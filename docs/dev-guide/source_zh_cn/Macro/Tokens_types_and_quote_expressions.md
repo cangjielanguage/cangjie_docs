@@ -77,7 +77,7 @@ description: integer_literal, token_id: 140, token_literal_value: 2, fileID: 1, 
 
 在大多数情况下，直接构造和拼接 `Tokens` 会比较繁琐。因此，仓颉语言提供了 `quote` 表达式来从代码模板构造 `Tokens`。之所以说是代码模板，因为在 `quote` 中可以使用 `$(...)` 来插入上下文中的表达式。插入的表达式的类型需要支持被转换为 `Tokens`（具体来说，实现了 `ToTokens` 接口）。在标准库中，以下类型实现了 `ToTokens` 接口：
 
-- 所有的节点类型（节点将在[语法节点](./sytax_node.md)中讨论）
+- 所有的节点类型（节点将在[语法节点](./syntax_node.md)中讨论）
 - `Token` 和 `Tokens` 类型
 - 所有基础数据类型：整数、浮点数、`Bool`、`Rune` 和 `String`
 - `Array<T>` 和 `ArrayList<T>`，这里对 `T` 的类型有限制，并根据 `T` 的类型不同，输出不同的分隔符，详细请见《仓颉编程语言库 API》文档。
@@ -113,7 +113,7 @@ s = "Hello"
 
 ```
 
-更多插值的用法可以参考  [使用 quote 插值语法节点](./sytax_node.md#使用-quote-插值语法节点)。
+更多插值的用法可以参考  [使用 quote 插值语法节点](./syntax_node.md#使用-quote-插值语法节点)。
 
 特别地，当 `quote` 表达式包含某些特殊 `Token` 时，需要进行转义：
 
