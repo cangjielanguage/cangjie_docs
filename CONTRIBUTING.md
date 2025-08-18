@@ -1,6 +1,6 @@
 # Contributing Documents
 
-[查看中文](./CONTRINUTING_zh.md)
+[查看中文](./CONTRIBUTING_zh.md)
 
 Welcome to contribute to the Cangjie documentation. You can evaluate, modify, provide feedback on existing documents, or contribute original content. We encourage developers to participate in document feedback and contributions in various ways.
 
