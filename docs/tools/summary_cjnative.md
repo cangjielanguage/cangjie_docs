@@ -4,3 +4,4 @@
     - [格式化工具](source_zh_cn/cmd-tools/cjfmt_manual.md)
     - [HLE工具](source_zh_cn/cmd-tools/HLE_manual.md)
     - [语言服务器工具](source_zh_cn/cangjie-language-server/LSPServer_manual.md)
+    - [CHIR反序列化工具](source_zh_cn/cmd-tools/chir_dis_manual.md)

@@ -84,6 +84,17 @@ func getOrThrow(a: ?Int64) {
     let y = Option<R>.None
     let r1 = x?.a   // r1 = Option<Int64>.Some(100)
     let r2 = y?.a   // r2 = Option<Int64>.None
+
+    class C {
+        var item: Int64 = 100
+    }
+    let c = C()
+    let c1 = Option<C>.Some(c)
+    let c2 = Option<C>.None
+    func test1() {
+        c1?.item = 200             // c.item = 200
+        c2?.item = 300             // no effect
+    }
     ```
 
    问号操作符（`?`）支持多层访问，以 `a?.b.c?.d` 为例（`()`，`[]` 和 `{}`同理）。表达式 `a` 的类型需要是某个 `Option<T1>` 且 `T1` 包含实例成员 `b`，`b` 的类型中包含实例成员变量 `c` 且 `c` 的类型是某个 `Option<T2>`，`T2` 包含实例成员 `d`；表达式 `a?.b.c?.d` 的类型为 `Option<T3>`，其中 `T3` 是 `T2` 的实例成员 `d` 的类型；当 `a` 的值等于 `Some(va)` 且 `va.b.c` 的值等于 `Some(vc)` 时，`a?.b.c?.d` 的值等于 `Option<T3>.Some(vc.d)`；当 `a` 的值等于 `Some(va)` 且 `va.b.c` 的值等于 `None` 时，`a?.b.c?.d` 的值等于 `Option<T3>.None`（`d` 不会被求值）；当 `a` 的值等于 `None` 时，`a?.b.c?.d` 的值等于 `Option<T3>.None`（`b`，`c` 和 `d` 都不会被求值）。
@@ -91,22 +102,26 @@ func getOrThrow(a: ?Int64) {
     <!-- compile -->
 
     ```cangjie
-    struct A {
-        let b: B = B()
+    class A {
+        public var b: B = B()
     }
 
-    struct B {
-        let c: Option<C> = C()
-        let c1: Option<C> = Option<C>.None
+    class B {
+        public var c: Option<C> = C()
+        public var c1: Option<C> = Option<C>.None
     }
 
-    struct C {
-        let d: Int64 = 100
+    class C {
+        public var d: Int64 = 100
     }
 
-    let a = Some(A())
-    let a1 = a?.b.c?.d // a1 = Option<Int64>.Some(100)
-    let a2 = a?.b.c1?.d // a2 = Option<Int64>.None
+    main(){
+        var a = Some(A())
+        let a1 = a?.b.c?.d  // a1 = Option<Int64>.Some(100)
+        let a2 = a?.b.c1?.d // a2 = Option<Int64>.None
+        a?.b.c?.d = 200     // a.b.c.d = 200
+        a?.b.c1?.d = 200    // no effect
+    }
     ```
 
 - `getOrThrow` 函数：对于 `?T` 类型的表达式 `e`，可以通过调用 `getOrThrow` 函数实现解构。当 `e` 的值等于 `Some(v)` 时，`getOrThrow()` 返回 `v` 的值，否则抛出异常。举例如下：

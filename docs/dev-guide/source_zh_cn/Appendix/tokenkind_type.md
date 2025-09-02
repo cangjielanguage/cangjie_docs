@@ -161,6 +161,10 @@ public enum TokenKind <: ToString {
     ANNOTATION|               /*  e.g. "@When"       */
     AT_EXCL|                  /*  e.g. "@!"          */
     ILLEGAL|
+    HANDLE|                   /*  "handle"           */
+    PERFORM|                  /*  "perform"          */
+    RESUME|                   /*  "resume"           */
+    THROWING|                 /*  "throwing"         */
     ...
 }
 ```

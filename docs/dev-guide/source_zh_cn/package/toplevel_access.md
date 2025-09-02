@@ -139,3 +139,41 @@ public func f4() { 4 }    // f4 当前模块内外均可见
     var num = 5
     public var t3 = num // OK.
     ```
+
+> **注意：**
+>
+> 同一个包内，`private` 修饰的同名自定义类型（如 `struct`、`class`、`enum` 和 `interface` 等），在某些场景下不支持，不支持场景由编译器进行报错。
+
+例如在以下程序中，`example1.cj` 与 `example2.cj`文件包名相同，在 `example1.cj` 文件中定义了 `private` 修饰的类 `A`, 在 `example2.cj` 文件中定义了 `private` 修饰的结构体 `A`。
+
+<!-- compile -->
+
+```cangjie
+// example1.cj
+package test
+
+private class A {}
+
+public class D<T> {
+    private let a: A = A()
+}
+```
+
+<!-- compile -->
+
+```cangjie
+// example2.cj
+package test
+
+private struct A {}
+
+public class C<T> {
+    private let a: A = A()
+}
+```
+
+运行以上程序，将输出：
+
+```text
+error: currently, it is not possible to export two private declarations with the same name
+```

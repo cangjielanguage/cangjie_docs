@@ -10,7 +10,7 @@
 
 `Cangjie Language Server` 启动参数如下：
 
-```bash
+```shell
 -V                    可选参数，使能 LSPServer 崩溃日志生成能力
 --enable-log=<value>  可选参数，控制是否开启日志打印，若不设置，默认设值为 true，开启日志打印功能
 --log-path=<value>    可选参数，设置日志文件和崩溃日志文件生成位置，若不设置，默认在 LSPServer 所在目录生成日志文件
@@ -20,7 +20,7 @@
 
 ## 使用示例
 
-```bash
+```shell
 LSPServer.exe --enable-log=true --log-path=D:/CangjieLSPLog -V --disableAutoImport
 ```
 
