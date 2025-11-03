@@ -165,6 +165,7 @@ public enum TokenKind <: ToString {
     PERFORM|                  /*  "perform"          */
     RESUME|                   /*  "resume"           */
     THROWING|                 /*  "throwing"         */
+    DOUBLE_COLON|             /*  "::"               */
     ...
 }
 ```
