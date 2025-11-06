@@ -521,7 +521,7 @@ The unit test code structure for a module is as follows, where `xxx.cj` contains
 - `--show-all-output` Enables output printing for all test cases, including passed ones.
 - `--no-capture-output` Disables test output capture, printing output immediately during test execution.
 - `--report-path <value>` Specifies the path for generating test execution reports.
-- `--report-format <value>` Specifies the report output format. Currently, only `xml` format (case-insensitive) is supported for unit test reports. Other values will throw an exception.
+- `--report-format <value>` Specifies the report output format. Currently, only `xml` and `xml-per-package` format (case-insensitive) is supported for unit test reports. Other values will throw an exception.
 - `--skip-script` Skips the compilation and execution of build scripts.
 - `--no-progress` Disables progress reporting. Implicitly enabled if `--dry-run` is specified.
 - `--progress-brief` Displays a brief (single-line) progress report instead of a detailed one.
@@ -1239,7 +1239,7 @@ Test configuration supports specifying options during test compilation and execu
     - `random-seed`: Specifies the random seed value. Must be a positive integer.
     - `no-color`: Specifies whether to disable colored output in the console. Can be `true` or `false`.
     - `report-path`: Specifies the path for test execution reports (cannot be configured via `@Configure`).
-    - `report-format`: Specifies the report output format. Currently, unit test reports only support `xml` format (case-insensitive). Other values will throw an exception (cannot be configured via `@Configure`). Performance test reports only support `csv` and `csv-raw` formats.
+    - `report-format`: Specifies the report output format. Currently, unit test reports only support `xml` and `xml-per-package` format (case-insensitive). Other values will throw an exception (cannot be configured via `@Configure`). Performance test reports only support `csv` and `csv-raw` formats.
     - `verbose`: Specifies whether to display detailed compilation information. Can be `true` or `false`.
 
 #### "profile.test.build"
@@ -1280,7 +1280,7 @@ Benchmark configuration supports specifying options during benchmark compilation
     - `random-seed`: Specifies the random seed value. Must be a positive integer.
     - `no-color`: Specifies whether to disable colored output in the console. Can be `true` or `false`.
     - `report-path`: Specifies the path for benchmark execution reports (cannot be configured via `@Configure`).
-    - `report-format`: Specifies the report output format. Currently, unit test reports only support `xml` format (case-insensitive). Other values will throw an exception (cannot be configured via `@Configure`). Performance test reports only support `csv` and `csv-raw` formats.
+    - `report-format`: Specifies the report output format. Currently, unit test reports only support `xml` and `xml-per-package` format (case-insensitive). Other values will throw an exception (cannot be configured via `@Configure`). Performance test reports only support `csv` and `csv-raw` formats.
     - `verbose`: Specifies whether to display detailed compilation information. Can be `true` or `false`.
     - `baseline-path`: The path of an existing report to compare with the current performance results. By default, it uses the `--report-path` value.
 
