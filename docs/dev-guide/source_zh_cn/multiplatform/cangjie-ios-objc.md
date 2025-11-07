@@ -525,7 +525,7 @@ class A <: M {
 
 - 支持可变变量 var、不可变变量 let。
 - 类型可为具备与 ObjC 的映射关系的基础类型、Mirror 类型或 Impl 类型。
-- 不支持 static/const 类型变量。
+- 不支持 static/const/private 类型变量。
 
 ### 继承
 
