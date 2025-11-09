@@ -1730,7 +1730,7 @@ It is resumed, a = 9
 
 ### 打印 LLVM IR
 
-可通过 `--dump-ir`<sup>[frontend]</sup>打印 LLVM IR。默认输出到文件，产物目录会创建以包名（或使用 `-o` 指定的产物名）命名的 *_IR 目录并在 *_IR 目录下创建 `阶段编号_subModules` 子文件夹，文件名为 `子模块编号加-包名.ll`， 子模块的编号和数量与编译并发度相关。加上 --dump-to-screen<sup>[frontend]</sup> 可输出到屏幕。
+可通过 `--dump-ir`<sup>[frontend]</sup>打印 LLVM IR。默认输出到文件，产物目录会创建以包名（或使用 `-o` 指定的产物名）命名的 *_IR 目录并在 *_IR 目录下创建 `编号_CodeGen阶段名称` 子文件夹，文件名为 `子模块编号加-包名.ll`， 子模块的编号和数量与编译并发度相关。加上 --dump-to-screen<sup>[frontend]</sup> 可输出到屏幕。
 
 ### 打印 AST, CHIR, LLVM IR
 
