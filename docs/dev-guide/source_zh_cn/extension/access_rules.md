@@ -71,15 +71,25 @@ extend Foo {
 
 只能在 `package a` 或者在 `package b` 中为 `Foo` 实现 `Bar`。
 
-<!-- compile.error -->
+<!-- compile.error -extend1 -->
+<!-- cfg="-p a --output-type=staticlib" -->
 
 ```cangjie
 // package a
 public class Foo {}
+```
 
+<!-- compile.error -extend1 -->
+<!-- cfg="-p b --output-type=staticlib" -->
+```cangjie
 // package b
 public interface Bar {}
+```
 
+<!-- compile.error -extend1 -->
+<!-- cfg="-p c liba.a libb.a --output-type=staticlib" -->
+
+```cangjie
 // package c
 import a.Foo
 import b.Bar
@@ -217,6 +227,8 @@ extend<X> E<X> <: I2 where X <: A   { // extension 2
 
 如以下代码所示，`Foo` 是导出的，`f1` 函数所在的扩展由于不导出泛型约束，故该扩展不会被导出；`f2` 和 `f3` 函数所在的扩展的泛型约束均被导出，故该扩展被导出；`f4` 函数所在的扩展包含多个泛型约束，且泛型约束中 `I1` 未被导出，故该扩展不会被导出；`f5` 函数所在的扩展包含多个泛型约束，所有的泛型约束均是导出的，故该扩展会被导出。
 
+<!-- code_check_manual -->
+
 ```cangjie
 // package a.b
 package a.b
@@ -281,6 +293,8 @@ main() {
 
 如下代码所示，在包 `a` 中，虽然接口访问修饰符为 `private`，但 `Foo` 的扩展仍然会被导出。
 
+<!-- compile -->
+
 ```cangjie
 // package a
 package a
@@ -294,6 +308,8 @@ extend<T> Foo<T> <: I0 {}
 ```
 
 当在其他包中为 `Foo` 类型扩展时，扩展是否导出由实现接口和泛型约束的访问修饰符决定。实现接口至少存在一个导出的接口，且所有的泛型约束均可导出时，该扩展将被导出。
+
+<!-- code_check_manual -->
 
 ```cangjie
 // package b
@@ -389,7 +405,8 @@ main() {
 
 而对于接口扩展，需要同时导入被扩展的类型、扩展的接口和泛型约束（如果有）才能使用。因此在 `package c` 中，需要同时导入 `Foo` 和 `I` 才能使用对应扩展中的函数 `g`。
 
-<!-- compile -->
+<!-- run -access_rule4 -->
+<!-- cfg="-p a --output-type=staticlib" -->
 
 ```cangjie
 // package a
@@ -399,6 +416,9 @@ extend Foo {
     public func f() {}
 }
 ```
+
+<!-- run -access_rule4 -->
+<!-- cfg="-p b --output-type=staticlib liba.a" -->
 
 ```cangjie
 // package b
@@ -414,6 +434,9 @@ extend Foo <: I {
     }
 }
 ```
+
+<!-- run -access_rule4 -->
+<!-- cfg="liba.a libb.a" -->
 
 ```cangjie
 // package c
