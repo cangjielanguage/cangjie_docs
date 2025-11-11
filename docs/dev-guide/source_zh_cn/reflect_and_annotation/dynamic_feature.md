@@ -65,31 +65,15 @@ public class TypeInfo {
 
 请注意，传入参数需要符合 `module.package.type` 的完全限定模式规则。对于编译器预导入的类型，包含 core 包中的类型和编译器内置类型，例如 `primitive type`、`Option`、`Iterable` 等，查找的字符串需要直接使用其类型名，不能带包名和模块名前缀。当运行时无法查询到对应类型的实例，则会抛出 `InfoNotFoundException`。
 
-```cangjie
-let t1: TypeInfo = TypeInfo.get("Int64")
-let t1: TypeInfo = TypeInfo.get("default.Foo")
-let t2: TypeInfo = TypeInfo.get("std.socket.TcpSocket")
-let t3: TypeInfo = TypeInfo.get("net.http.ServerBuilder")
-```
-
-采用这种方式时无法获取一个未实例化的泛型类型。
+示例：（会运行报错）
+<!-- run.error -->
 
 ```cangjie
 import std.collection.*
 import std.reflect.*
 
-class A<T> {
-    A(public let t: T) {}
-}
-
-class B<T> {
-    B(public let t: T) {}
-}
-
 main() {
-    let aInfo: TypeInfo = TypeInfo.get("default.A<Int64>")// Error,`default.A<Int64>` is not instantiated，will throw InfoNotFoundException
-    let b: B<Int64> = B<Int64>(1)
-    let bInfo: TypeInfo = TypeInfo.get("default.B<Int64>")// OK `default.B<Int64>` has been instantiated.
+    let t1: TypeInfo = TypeInfo.get("default.Foo")
 }
 ```
 
