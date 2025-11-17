@@ -792,12 +792,6 @@ Write the absolute path of the Cangjie runtime library directory into the RPATH/
 
 This feature is not supported when compiling for Windows targets.
 
-### `--link-option <value>`<sup>1</sup>
-
-Specify linker options.
-
-`cjc` will pass the value of this option as a parameter to the linker. Available parameters vary depending on the linker (system or specified). Multiple linker options can be specified by using `--link-option` multiple times.
-
 ### `--link-options <value>`<sup>1</sup>
 
 Specify linker options.
