@@ -796,12 +796,6 @@ cjc --target=arch-os-env --sysroot /usr/sdk/arch-os-env hello.cj -o hello
 
 编译 Windows 目标时不支持使用该功能。
 
-### `--link-option <value>`<sup>1</sup>
-
-指定链接器选项。
-
-`cjc` 会将该选项的值作为一个参数透传给链接器。可用的参数会因（系统或指定的）链接器的不同而不同。可以多次使用 `--link-option` 指定多个链接器选项。
-
 ### `--link-options <value>`<sup>1</sup>
 
 指定链接器选项。
