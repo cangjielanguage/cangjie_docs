@@ -209,8 +209,8 @@ class A {
     public static var ctx: Int64 // 编译报错，静态变量 ctx 没有初始化
 
     static init() {
-        let lambda1 = {=> ctx = 10}
-        foo(lambda1)
+        let lambda = {=> ctx = 10}
+        foo(lambda)
     }
 }
 
