@@ -1066,7 +1066,7 @@ public interface A {
 - 不支持通过 extend 对接口进行扩展
 - 不支持 Option 类型
 
-### Java 使用 Cangjie 枚举
+### ObjC 使用 Cangjie 枚举
 
 为实现 Cangjie 与 Objective-C 的互操作，需将 Cangjie 的枚举类型映射为 ObjC 的类。映射后，用户可：
 
