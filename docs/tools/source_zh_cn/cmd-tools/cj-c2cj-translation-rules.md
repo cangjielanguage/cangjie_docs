@@ -173,6 +173,23 @@ void test(char* a);
 foreign func test(a: CString): Unit
 ```
 
+#### 全局变量
+
+目前只支持C语言中的基础类型的常量。
+
+.h声明文件：
+
+```c
+const int GLOBAL_CONST = 42;
+```
+
+对应生成的胶水代码如下：
+
+<!-- compile -->
+```cangjie
+public const GLOBAL_CONST: Int32 = 42
+```
+
 #### 数组类型
 
 .h声明文件：
@@ -337,7 +354,7 @@ _Atomic(int) counter = 0;
 ```cangjie
 public const pi_high: Float64 = 3.141592653589793
 public const Planck_constant: Float64 = 6.62607015e-34
-public const counter: Int32 = 0i64
+public const counter: Int32 = 0
 ```
 
 > 说明：

@@ -174,6 +174,23 @@ The corresponding generated glue code is as follows:
 foreign func test(a: CString): Unit
 ```
 
+#### Global Variables
+
+Currently, only constants of basic types in C are supported.
+
+.h header file declaration:
+
+```c
+const int GLOBAL_CONST = 42;
+```
+
+The corresponding generated glue code is as follows:
+
+<!-- compile -->
+```cangjie
+public const GLOBAL_CONST: Int32 = 42
+```
+
 #### Array Type
 
 .h declaration file:
