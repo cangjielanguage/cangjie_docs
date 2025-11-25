@@ -22,7 +22,8 @@
 
 ### 新增特性
 
-    注意该节按需提供，若没有，则删除
+    * 互操作支持 ObjC 使用 Cangjie 接口，详见[仓颉-ObjC 互操作](../docs/dev-guide/source_zh_cn/multiplatform/cangjie-ios-objc.md)。
+    * 互操作支持 ObjC 使用 Cangjie 枚举类型，详见[仓颉-ObjC 互操作](../docs/dev-guide/source_zh_cn/multiplatform/cangjie-ios-objc.md)。
 
 ### 变更特性
 
