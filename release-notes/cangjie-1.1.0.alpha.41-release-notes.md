@@ -16,7 +16,7 @@
 
 详见后续章节介绍。
 
-## 编译器i
+## 编译器
 
 本版本编译器实现了仓颉 x.y.z 版本 Spec
 
@@ -40,7 +40,7 @@
 
 ### 新增特性
 
-    注意该节按需提供，若没有，则删除
+* 条件编译新增 `env`内置条件变量，在其他条件变量的基础上提供额外信息，比如目标平台的 ABI （Application Binary Interface），用于消除目标平台之间的歧义。新增特性具体描述详见[条件编译](../docs/dev-guide/source_zh_cn/compile_and_build/conditional_compilation.md#内置编译条件变量)
 
 ### 变更特性
 
