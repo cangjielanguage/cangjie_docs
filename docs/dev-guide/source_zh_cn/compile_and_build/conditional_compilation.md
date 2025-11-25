@@ -114,7 +114,7 @@ main() {
 
 `env` 在其他条件变量的基础上提供额外信息，比如目标平台的 ABI （Application Binary Interface），用于消除目标平台之间的歧义。`env` 条件支持 `==` 和 `!=` 两种操作符。
 
-支持的 `env` 选项有：`ohos`、`musl`、`simulator`、`android`以及缺省（空字符串）。
+支持的 `env` 选项有：`ohos`、`gnu`、`simulator`、`android`以及缺省（空字符串）。
 
 使用方式如下：
 
