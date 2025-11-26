@@ -2,12 +2,11 @@
 title: "xxx: xxx"
 assignees: 'xuanjz'
 ---
-
 # 仓颉Docs仓文档PR信息
 
 ## 文档变更内容 **（必填）**
 
-请描述本次文档更新内容：
+
 
 ## 文档变更类型
 
