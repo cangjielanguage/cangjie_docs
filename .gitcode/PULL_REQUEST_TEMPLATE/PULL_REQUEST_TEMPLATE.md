@@ -1,6 +1,5 @@
 ---
 title: "xxx: xxx"
-assignees: 'xuanjz'
 ---
 # 仓颉Docs仓文档PR信息
 
