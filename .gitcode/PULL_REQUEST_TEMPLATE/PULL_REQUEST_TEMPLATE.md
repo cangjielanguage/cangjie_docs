@@ -1,8 +1,6 @@
 ---
 title: "[docs/fix/...]: xxx"
-assignees: 'xuanjz'
 ---
-
 # 仓颉Docs仓文档PR信息
 
 > **注意：**
