@@ -186,37 +186,37 @@ cjc 自动生成胶水代码需要获取在跨编程语言调用中涉及的 Obj
 
     生成的镜像文件 `Base.cj` 如下：
 
-<!-- compile -->
-```cangjie
-// Base.cj
-package example
+    <!-- compile -->
+    ```cangjie
+    // Base.cj
+    package example
 
-import objc.lang.*
+    import objc.lang.*
 
-@ObjCMirror
-open class Base {
-    public init()
-    public open func f(): Unit
-}
-```
+    @ObjCMirror
+    open class Base {
+        public init()
+        public open func f(): Unit
+    }
+    ```
 
     如果需要基于 `Base` 对部分函数进行重写，示例如下：
 
-<!-- compile -->
-```cangjie
-// Interop.cj
-package example
+    <!-- compile -->
+    ```cangjie
+    // Interop.cj
+    package example
 
-import objc.lang.*
+    import objc.lang.*
 
-@ObjCImpl
-public class Interop <: Base {
-    override public func f(): Unit {
-        println("Hello from overridden Cangjie Interop.f()")
-        Base().f()
+    @ObjCImpl
+    public class Interop <: Base {
+        override public func f(): Unit {
+            println("Hello from overridden Cangjie Interop.f()")
+            Base().f()
+        }
     }
-}
-```
+    ```
 
 3. 开发互操作代码，使用步骤 2 中生成的 Mirror Type 创建 ObjC 对象、调用 ObjC 方法。
 
@@ -224,20 +224,20 @@ public class Interop <: Base {
 
     例如如下示例，可通过 ObjCImpl 类型继承 Mirror Type 调用 ObjC 类型构造函数：
 
-<!-- compile -->
-```cangjie
-// A.cj
-package cjworld
+    <!-- compile -->
+    ```cangjie
+    // A.cj
+    package cjworld
 
-import objc.lang.*
+    import objc.lang.*
 
-@ObjCImpl
-public class A <: M {
-    override public func goo(): Unit {
-        println("Hello from overridden A goo()")
+    @ObjCImpl
+    public class A <: M {
+        override public func goo(): Unit {
+            println("Hello from overridden A goo()")
+        }
     }
-}
-```
+    ```
 
 4. 使用 cjc 编译互操作代码和 'Mirror Type.cj' 类型。cjc 将生成：
 
@@ -1048,7 +1048,7 @@ try {
 ## @property 属性
 
 支持通过 `@ForeignGetterName` 和 `@ForeignSetterName` 映射 ObjC 的 @property 语法。
-在 Mirror类中，具有 `@ForeignGetterName` 和 `@ForeignSetterName` 注解的属性将改变从 Cangjie 端访问属性时使用的方法。默认生成的选择器（来自属性名或 `@ForeignName` 注解）会被指定的选择器覆盖。在下面的示例中，Objective-C 端重新定义了属性的 getter 和 setter 名称：
+在 Mirror 类中，具有 `@ForeignGetterName` 和 `@ForeignSetterName` 注解的属性将改变从 Cangjie 端访问属性时使用的方法。默认生成的选择器（来自属性名或 `@ForeignName` 注解）会被指定的选择器覆盖。在下面的示例中，Objective-C 端重新定义了属性的 getter 和 setter 名称：
 
 ```objc
 @interface Component
@@ -1115,7 +1115,7 @@ Cangjie 源码：
 
 ```cangjie
 // cangjie code
-package UNNAMED
+package cjworld
 
 public interface A {
     public func foo() : Unit
@@ -1145,13 +1145,17 @@ public interface A {
 由于与其他语言特性的集成仍在开发中，以下场景暂不支持：
 
 - Cangjie 接口不得继承其他接口
-- 接口成员函数不得使用泛型
+- 不支持泛型接口
+- 不支持泛型成员函数
+- 不支持成员属性、操作符重载函数
 - 成员函数不得为 static
 - 成员函数不得包含默认实现
 - 不支持函数重载
-- 仅允许使用基础数据类型（如 Int32、Unit 等）
-- 不支持通过 extend 对接口进行扩展
-- 不支持 Option 类型
+- 仅允许使用基础数据类型：
+    - 数值类型
+    - Bool 类型
+    - Unit 类型
+- 已支持的互操作特性不得使用 interface 作为函数返回值类型
 
 ### ObjC 使用 Cangjie 枚举
 
@@ -1162,7 +1166,7 @@ public interface A {
 - 调用枚举中定义的静态方法和实例方法
 - 支持枚举属性的访问
 
-#### 示例：
+#### 示例
 
 <!-- compile -->
 
@@ -1326,13 +1330,325 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 由于与其他语言特性的集成仍在开发中，以下场景暂不支持：
 
-- Cangjie enum不得实现其他接口
-- 接口成员函数不得使用泛型
-- 成员函数中不使用Lambda
+- Cangjie enum 不得实现其他接口
+- 不支持泛型 enum
+- 不支持泛型成员函数
+- 成员函数中不使用 Lambda
 - 不支持操作符重载
-- 仅允许使用基础数据类型（如 Int32、Unit 等）
+- 不支持函数重载
+- 不支持命名参数
+- 仅允许使用基础数据类型：
+    - 数值类型
+    - Bool 类型
+    - Unit 类型
 - 不支持通过 extend 对 enum 进行扩展
-- 不支持 Option 类型
+
+### ObjC 使用 Cangjie 结构体
+
+为实现 Cangjie 与 Objective-C 的互操作，需将 Cangjie 的 struct 类型映射为 ObjC 的类。映射后，用户可：
+
+- 在 ObjC 中调用 Cangjie 侧 public struct 的 public 实例方法、静态方法
+- 在 ObjC 中访问 Cangjie 侧 public struct 的 public 静态/非静态成员变量
+- 在 ObjC 中访问 Cangjie 侧 public struct 的 public 成员属性
+- 在 ObjC 函数中使用 Cangjie 侧 public struct 作为参数类型、返回值类型
+
+#### 示例
+
+Cangjie 源码：
+
+<!-- compile -->
+
+```cangjie
+// cangjie code
+package cjworld
+
+public struct Vector {
+    public let x: Int32
+    public let y: Int32
+
+    public init(x: Int32, y: Int32) {
+        this.x = x
+        this.y = y
+    }
+
+    public func dot(v: Vector): Int64 {
+        let res: Int64 = Int64(x * v.x + y * v.y)
+        return res
+    }
+
+    public static func processPrimitive(intArg: Int32, floatArg: Float64, boolArg: Bool): Unit {
+        println("Hello from static processPrimitive: ${intArg * 2}, ${floatArg + 1.0} + ${!boolArg}")
+    }
+}
+```
+
+生成的 ObjC 头文件与源文件：
+
+```ObjC
+// Vector.h
+#import <Foundation/Foundation.h>
+#import <stddef.h>
+__attribute__((objc_subclassing_restricted))
+@interface Vector : NSObject
+- (id)init:(int32_t)x :(int32_t)y;
+- (id)initWithRegistryId:(int64_t)registryId;
++ (void)initialize;
+@property (readwrite) int64_t $registryId;
+@property (readonly, getter=x) int32_t x;
+- (int32_t)x;
+@property (readonly, getter=y) int32_t y;
+- (int32_t)y;
+- (int64_t)dot:(Vector*)v;
++ (void)processPrimitive:(int32_t)intArg :(double)floatArg :(BOOL)boolArg;
+- (void)deleteCJObject;
+- (void)dealloc;
+@end
+
+// Vector.m
+#import "Vector.h"
+#import "Cangjie.h"
+#import <dlfcn.h>
+#import <stdlib.h>
+static int64_t (*CJImpl_ObjC_cjworld_Vector_init__ii)(int32_t,int32_t) = NULL;
+static void (*CJImpl_ObjC_cjworld_Vector_deleteCJObject)(int64_t) = NULL;
+static int32_t (*CJImpl_ObjC_cjworld_Vector_x_get)(int64_t) = NULL;
+static int32_t (*CJImpl_ObjC_cjworld_Vector_y_get)(int64_t) = NULL;
+static int64_t (*CJImpl_ObjC_cjworld_Vector_dot_RN7cjworld6VectorE)(int64_t,int64_t) = NULL;
+static void (*CJImpl_ObjC_cjworld_Vector_processPrimitive___idb)(int32_t,double,BOOL) = NULL;
+static void* CJWorldDLHandle = NULL;
+static struct RuntimeParam defaultCJRuntimeParams = {0};
+@implementation Vector
+- (id)init:(int32_t)x :(int32_t)y {
+    if (self = [super init]) {
+        self.$registryId = CJImpl_ObjC_cjworld_Vector_init__ii(x, y);
+    }
+    return self;
+}
+- (id)initWithRegistryId:(int64_t)registryId {
+    if (self = [super init]) {
+        self.$registryId = registryId;
+    }
+    return self;
+}
++ (void)initialize {
+    if (self == [Vector class]) {
+        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
+        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
+            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
+            exit(1);
+        }
+        if (LoadCJLibraryWithInit("libcjworld.dylib") != E_OK) {
+            NSLog(@"ERROR: Failed to init cjworld library ");
+            exit(1);
+        }
+        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
+            NSLog(@"ERROR: Failed to open cjworld library ");
+            NSLog(@"%s", dlerror());
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_init__ii = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_init__ii")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_init__ii symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_deleteCJObject = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_deleteCJObject")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_deleteCJObject symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_x_get = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_x_get")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_x_get symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_y_get = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_y_get")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_y_get symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_dot_RN7cjworld6VectorE = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_dot_RN7cjworld6VectorE")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_dot_RN7cjworld6VectorE symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_processPrimitive___idb = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_processPrimitive___idb")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_processPrimitive___idb symbol in cjworld");
+            exit(1);
+        }
+    }
+}
+- (int32_t)x {
+    return CJImpl_ObjC_cjworld_Vector_x_get(self.$registryId);
+}
+- (int32_t)y {
+    return CJImpl_ObjC_cjworld_Vector_y_get(self.$registryId);
+}
+- (int64_t)dot:(Vector*)v {
+    return CJImpl_ObjC_cjworld_Vector_dot_RN7cjworld6VectorE(self.$registryId, v.$registryId);
+}
++ (void)processPrimitive:(int32_t)intArg :(double)floatArg :(BOOL)boolArg {
+     CJImpl_ObjC_cjworld_Vector_processPrimitive___idb(intArg, floatArg, boolArg);
+}
+- (void)deleteCJObject {
+     CJImpl_ObjC_cjworld_Vector_deleteCJObject(self.$registryId);
+}
+- (void)dealloc {
+    [self deleteCJObject];
+}
+@end
+
+```
+
+#### 规格约束
+
+由于与其他语言特性的集成仍在开发中，以下场景暂不支持：
+
+- Cangjie 结构体不得实现其他接口
+- 不支持泛型结构体
+- 不支持泛型成员函数
+- 不支持操作符重载函数
+- 不支持函数重载
+- 不支持 mut 函数
+- 不支持 ObjC 端对成员变量、成员属性赋值
+- 成员变量仅允许使用基础数据类型：
+    - 数值类型
+    - Bool 类型
+    - Unit 类型
+
+### ObjC 使用 Cangjie 类
+
+为实现 Cangjie 与 Objective-C 的互操作，需将 Cangjie 的非 open 类映射为 ObjC 的类。映射后，用户可在 ObjC 代码中，直接调用 Cangjie 侧公开类（public class）的公共实例方法与静态方法。
+
+#### 示例
+
+<!-- compile -->
+
+Cangjie 源码：
+
+```cangjie
+// cangjie code
+package cjworld
+
+public class Vector {
+    let x: Int32
+    let y: Int32
+
+    public init(x: Int32, y: Int32) {
+        this.x = x
+        this.y = y
+    }
+
+    public func dot(v: Vector): Int64 {
+        let res: Int64 = Int64(x * v.x + y * v.y)
+        return res
+    }
+
+    public static func processPrimitive(intArg: Int32, floatArg: Float64, boolArg: Bool): Unit {
+        println("Hello from static processPrimitive: ${intArg * 2}, ${floatArg + 1.0} + ${!boolArg}")
+    }
+}
+
+```
+
+生成的 ObjC 头文件与源文件：
+
+```ObjC
+// Vector.h
+#import <Foundation/Foundation.h>
+#import <stddef.h>
+__attribute__((objc_subclassing_restricted))
+@interface Vector : NSObject
+- (id)init:(int32_t)x :(int32_t)y;
+- (id)initWithRegistryId:(int64_t)registryId;
++ (void)initialize;
+@property (readwrite) int64_t $registryId;
+- (int64_t)dot:(Vector*)v;
++ (void)processPrimitive:(int32_t)intArg :(double)floatArg :(BOOL)boolArg;
+- (void)deleteCJObject;
+- (void)dealloc;
+@end
+
+// Vector.m
+#import "Vector.h"
+#import "Cangjie.h"
+#import <dlfcn.h>
+#import <stdlib.h>
+static int64_t (*CJImpl_ObjC_cjworld_Vector_init__ii)(int32_t,int32_t) = NULL;
+static void (*CJImpl_ObjC_cjworld_Vector_deleteCJObject)(int64_t) = NULL;
+static int64_t (*CJImpl_ObjC_cjworld_Vector_dot_CN7cjworld6VectorE)(int64_t,int64_t) = NULL;
+static void (*CJImpl_ObjC_cjworld_Vector_processPrimitive___idb)(int32_t,double,BOOL) = NULL;
+static void* CJWorldDLHandle = NULL;
+static struct RuntimeParam defaultCJRuntimeParams = {0};
+@implementation Vector
+- (id)init:(int32_t)x :(int32_t)y {
+    if (self = [super init]) {
+        self.$registryId = CJImpl_ObjC_cjworld_Vector_init__ii(x, y);
+    }
+    return self;
+}
+- (id)initWithRegistryId:(int64_t)registryId {
+    if (self = [super init]) {
+        self.$registryId = registryId;
+    }
+    return self;
+}
++ (void)initialize {
+    if (self == [Vector class]) {
+        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
+        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
+            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
+            exit(1);
+        }
+        if (LoadCJLibraryWithInit("libcjworld.dylib") != E_OK) {
+            NSLog(@"ERROR: Failed to init cjworld library ");
+            exit(1);
+        }
+        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
+            NSLog(@"ERROR: Failed to open cjworld library ");
+            NSLog(@"%s", dlerror());
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_init__ii = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_init__ii")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_init__ii symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_deleteCJObject = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_deleteCJObject")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_deleteCJObject symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_dot_CN7cjworld6VectorE = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_dot_CN7cjworld6VectorE")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_dot_CN7cjworld6VectorE symbol in cjworld");
+            exit(1);
+        }
+        if ((CJImpl_ObjC_cjworld_Vector_processPrimitive___idb = dlsym(CJWorldDLHandle, "CJImpl_ObjC_cjworld_Vector_processPrimitive___idb")) == NULL) {
+            NSLog(@"ERROR: Failed to find CJImpl_ObjC_cjworld_Vector_processPrimitive___idb symbol in cjworld");
+            exit(1);
+        }
+    }
+}
+- (int64_t)dot:(Vector*)v {
+    return CJImpl_ObjC_cjworld_Vector_dot_CN7cjworld6VectorE(self.$registryId, v.$registryId);
+}
++ (void)processPrimitive:(int32_t)intArg :(double)floatArg :(BOOL)boolArg {
+     CJImpl_ObjC_cjworld_Vector_processPrimitive___idb(intArg, floatArg, boolArg);
+}
+- (void)deleteCJObject {
+     CJImpl_ObjC_cjworld_Vector_deleteCJObject(self.$registryId);
+}
+- (void)dealloc {
+    [self deleteCJObject];
+}
+@end
+
+```
+
+#### 规格约束
+
+由于与其他语言特性的集成仍在开发中，以下场景暂不支持：
+
+- 不支持 open class
+- Cangjie class 不得实现其他接口
+- 仅支持 public 成员函数映射，其它成员不会报错，不会映射到 ObjC 端
+- 不支持泛型 class
+- 不支持泛型成员函数
+- 不支持函数重载
+- 成员函数参数和返回值允许使用基础数据类型（数值类型、Bool 类型和 Unit 类型）和本包定义的非 open public class 类型
+- 不支持通过 extend 对 class 进行扩展
 
 ## 版本约束限制
 
@@ -1344,7 +1660,7 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
     - 不支持同时转换多个 .h 头文件
     - 不支持 Bit fields 转换
 
-2.  当前版本的 ObjC 互操作方案存在如下约束限制：
+2. 当前版本的 ObjC 互操作方案存在如下约束限制：
     - 不支持 ObjC Mirror 和 Impl 类的实例逃逸出线程范围，即不能作为全局变量、静态变量，或作为这些变量的字段成员
     - ObjC Mirror 和 Impl 类的实例不能作为其他 ObjC Mirror 或 Impl 对象的字段成员
     - ObjC Mirror 和 Impl 类的实例不能被 Lambda 表达式块或 spawn 线程捕获
