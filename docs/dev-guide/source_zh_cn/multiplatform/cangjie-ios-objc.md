@@ -1509,6 +1509,7 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
     - 数值类型
     - Bool 类型
     - Unit 类型
+- 不支持通过 extend 对 struct 进行扩展
 
 ### ObjC 使用 Cangjie 类
 
