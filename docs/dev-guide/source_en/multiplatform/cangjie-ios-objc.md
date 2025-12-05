@@ -50,38 +50,44 @@ To automatically generate glue code, cjc requires symbol information about the O
 
 **Type Mapping:**
 
-| Cangjie Type                              |                ObjC Type      |
-|:------------------------------------------|:------------------------------|
-|    `Unit`                                 |        `void`                 |
-|     `Int8`                                |        `signed char`          |
-|    `Int16`                                |        `short`                |
-|     `Int32`                               |        `int`                  |
-|     `Int64`                               |        `long/NSInteger`       |
-|     `Int64`                               |        `long long`            |
-|     `UInt8`                               |        `unsigned char`        |
-|    `UInt16`                               |        `unsigned short`       |
-|    `UInt32`                               |        `unsigned int`         |
-|    `UInt64`                               |   `unsigned long/NSUInteger`  |
-|    `UInt64`                               |   `unsugned long long`        |
-|    `Float32`                              |        `float`                |
-|   `Float64`                               |        `double`               |
-|  `Bool`                                   |        `bool/BOOL`            |
-| `A` where `A` is `class`                  | `A*`                          |
-| `ObjCPointer<A>` where `A` is `class`     | `A**`                         |
-| `ObjCPointer<A>` where `A` is not `class` | `A*`                          |
-| `struct A`                                | `@C struct A`                 |
-| `ObjCBlock`                               | `Block`                       |
-| `ObjCFunc`                                | `function type`               |
-| `ObjCId`                                  | `id`                          |
-| `A` where `A` is `interface`              | `id<A>`                       |
+| Cangjie Type                              |                ObjC Type                    |
+|:------------------------------------------|:--------------------------------------------|
+|    `Unit`                                 |        `void`                               |
+|     `Int8`                                |        `signed char`                        |
+|    `Int16`                                |        `short`                              |
+|     `Int32`                               |        `int`                                |
+|     `Int64`                               |        `long/NSInteger`                     |
+|     `Int64`                               |        `long long`                          |
+|     `UInt8`                               |        `unsigned char`                      |
+|    `UInt16`                               |        `unsigned short`                     |
+|    `UInt32`                               |        `unsigned int`                       |
+|    `UInt64`                               |   `unsigned long/NSUInteger`                |
+|    `UInt64`                               |   `unsugned long long`                      |
+|    `Float32`                              |        `float`                              |
+|   `Float64`                               |        `double`                             |
+|  `Bool`                                   |        `bool/BOOL`                          |
+| `?A` where `A` is `class`                 | `A*` where `A` is `@interface`              |
+| `A` where `A` is `class`                  | `nonnull A*` where `A` is `@interface`      |
+| `ObjCPointer<A>` where `A` is `class`     | `A**` where `A` is `@interface`             |
+| `ObjCPointer<A>` where `A` is not `class` | `A*` otherwise                              |
+| `@C struct A`                             | `struct A`                                  |
+| `ObjCBlock<F>`                            | block                                       |
+| `ObjCFunc<F>`                             | function type                               |
+| `?ObjCId`                                 | `id`                                        |
+| `ObjCId`                                  | `nonnull id`                                |
+| `?A` where `A` is `interface`             | `id<A>`                                     |
+| `A` where `A` is `interface`              | `nonnull id<A>`                             |
+| `?ObjCId`                                 | `id<A,B>`, `id<A,B,C>`, etc.                |
+| `ObjCId`                                  | `nonnull id<A,B>`, etc.                     |
 
 Notes:
 
 1. Types marked as `unavailable` in ObjC source code are not mapped.
-2. The current version does not support conversion of global functions and variables in ObjC.
+2. The current version does not support conversion of global variables in ObjC.
 3. Anonymous `C enumeration` types are not mapped.
 4. `C unions` types are not mapped.
 5. Types with `const`, `volatile`, or `restrict` qualifiers are not mapped.
+6. Pointers to ObjC classes and `id` narrowed to exactly one protocal (`id<P>`) are mapped respectively to class and interface types wrapped in `Option<T>`, except for types of properties, method result types and method parameter types annotated with `nonnull`. The Cangjie compiler automatically wraps and unwraps the actual values, mapping `nil` to `None` and any non-null pointer `p` to `Some(p)`, and vice versa.
 
 Taking Cangjie calling ObjC as an example, the overall development process is described as follows:
 
@@ -429,7 +435,7 @@ Specifications:
 // M.h
 @interface M : NSObject
 
-@property int f
+@property int f;
 
 @end
 ```
@@ -653,7 +659,7 @@ public interface Foo {
 @ObjCMirror
 public open class M {
     public init()
-    public open func acceptFoo(foo: Foo): Unit 
+    public open func acceptFoo(foo: ?Foo): Unit
 }
 ```
 
@@ -665,8 +671,8 @@ public open class M {
 class A <: M {
     public init() {}
 
-    public func acceptFoo(foo: Foo) {
-        foo.foo()
+    public func acceptFoo(foo: ?Foo) {
+        foo?.foo()
     }
 }
 ```
@@ -956,7 +962,7 @@ public class ObjCBlock<F> {
 
 ### ObjCFunc
 
-The `ObjCFunc` type is defined in the `objc.lang` package and is used to map Objective-C functions. Its signature is as follows:
+The `ObjCFunc` type is defined in the `objc.lang` package and is used to map Objective-C function types. Its signature is as follows:
 
 <!-- compile -->
 
@@ -1012,6 +1018,33 @@ public struct X {
     var b: Float32
 }
 ```
+
+## Global Functions
+
+Global (file-level) Objective-C functions are mapped to `public` global Cangjie function declarations annotated with `@ObjCMirror`:
+
+```objectivec
+int foo(NSObject* o, double x) { ... }
+```
+
+```cangjie
+@ObjCMirror
+public func foo(o: ?NSObject, x: Float64): Int64
+```
+
+A mirror function declaration is subject to the following restrictions:
+
+  * It must be a declaration, not definition, i.e. it may not have a body, which also means that it must specify the return type explicitly.
+  * It cannot be modified with `foreign` or `const`.
+  * It cannot be generic.
+  * Only Objective-C compatible types (see [Type Mapping](#type-mapping)) can be used as its parameter and return types.
+  * Vararg parameters are not supported.
+  * Each `@ObjCMirror` function must have a unique name, i.e. there is no overloading.
+
+There is also a link-time requirement imposed by the macOS/iOS toolchain:
+
+  * If the mapped function is from the Foundation framework, Foundation must be linked to the `.so` file directly using the compiler option "`-framework Foundation`".
+  * If the mapped function is defined in user Objective-C code, that code (dynamic library or object file) must be linked to the Cangjie dynamic library that uses that function, e.g. if the mapped function is defined in `libobjcworld.dylib`, the option "`-lobjworld`" must be added to the `cjc` command line.
 
 ## Constraints and Limitations
 
