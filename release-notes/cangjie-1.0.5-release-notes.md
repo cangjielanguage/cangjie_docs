@@ -56,22 +56,9 @@
 
 ## 标准库
 
-
-### 新增特性
-
-    注意该节按需提供，若没有，则删除
-
-### 变更特性
-
-    注意该节按需提供，若没有，则删除
-
-|变更前|变更后|适配举例|
-|---|---|--|
-|   |   |   |  
-
 ### 修复问题
 
-    注意该节按需提供，若没有，则删除 
+- 【[issue227](https://gitcode.com/Cangjie/cangjie_runtime/issues/227)】RelWithDebInfo 下交叉编译 windows 报错: error: unsupported option '-fdebug-types-section' for target 'x86\_64-w64-windows-gnu'。
 
 
 ## 工具链
