@@ -120,6 +120,7 @@ multipleLineMethodChainOverLineLength = true
 > **Note:**
 >
 > If custom config file fails to load, the tool attempts to read default `cangjie-format.toml` from CANGJIE_HOME.
+> The default configuration file path for the formatting tool under the CANGJIE_HOME environment is `CANGJIE_HOME/tools/config`.
 > If default config also fails, built-in formatting options are used.
 > If any config option fails to load, the built-in default for that option is used.
 
