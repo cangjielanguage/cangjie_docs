@@ -1034,17 +1034,17 @@ public func foo(o: ?NSObject, x: Float64): Int64
 
 A mirror function declaration is subject to the following restrictions:
 
-  * It must be a declaration, not definition, i.e. it may not have a body, which also means that it must specify the return type explicitly.
-  * It cannot be modified with `foreign` or `const`.
-  * It cannot be generic.
-  * Only Objective-C compatible types (see [Type Mapping](#type-mapping)) can be used as its parameter and return types.
-  * Vararg parameters are not supported.
-  * Each `@ObjCMirror` function must have a unique name, i.e. there is no overloading.
+- It must be a declaration, not definition, i.e. it may not have a body, which also means that it must specify the return type explicitly.
+- It cannot be modified with `foreign` or `const`.
+- It cannot be generic.
+- Only Objective-C compatible types (see [Type Mapping](#type-mapping)) can be used as its parameter and return types.
+- Vararg parameters are not supported.
+- Each `@ObjCMirror` function must have a unique name, i.e. there is no overloading.
 
 There is also a link-time requirement imposed by the macOS/iOS toolchain:
 
-  * If the mapped function is from the Foundation framework, Foundation must be linked to the `.so` file directly using the compiler option "`-framework Foundation`".
-  * If the mapped function is defined in user Objective-C code, that code (dynamic library or object file) must be linked to the Cangjie dynamic library that uses that function, e.g. if the mapped function is defined in `libobjcworld.dylib`, the option "`-lobjworld`" must be added to the `cjc` command line.
+- If the mapped function is from e.g. the Foundation framework, Foundation must be linked to the `.so` file directly using the compiler option "`-framework Foundation`".
+- If the mapped function is defined in user Objective-C code, that code (dynamic library or object file) must be linked to the Cangjie dynamic library that uses that function, e.g. if the mapped function is defined in `libobjcworld.dylib`, the option "`-lobjworld`" must be added to the `cjc` command line.
 
 ## Constraints and Limitations
 
