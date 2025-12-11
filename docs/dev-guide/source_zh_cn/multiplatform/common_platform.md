@@ -1122,6 +1122,7 @@ common extend A {
     common func foo(): Unit
     common prop p: Int64
 }
+```
 
 <!-- compile -->
 ```cangjie
