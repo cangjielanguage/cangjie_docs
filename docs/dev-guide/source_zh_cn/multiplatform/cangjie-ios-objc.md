@@ -1066,7 +1066,7 @@ public struct X {
 @end
 ```
 
-在 Objective-C 中，@optional 方法不要求必须实现。当仓颉为包含此类方法的类生成 Mirror 对象并在运行时从 Cangjie 调用这些方法时，若方法未被实际实现，将导致运行时错误。
+在 Objective-C 中，@optional 方法不要求必须实现。当仓颉为包含此类方法的类生成 Mirror Interface 对象并在运行时从 Cangjie 调用这些方法时，若方法未被实际实现，将导致运行时错误。
 
 为避免此问题，仓颉引入了 @ObjCOptional 注解：当调用被该注解标记的方法时，若其实现不存在，则抛出 ObjCOptionalMethodUnimplementedException 异常,若存在，则正常执行调用。
 
@@ -1074,7 +1074,7 @@ public struct X {
 
 ```cangjie
 @ObjCMirror
-open class M {
+open interface M {
     @ObjCOptional
     @ForeignName["foo"]
     public func foo(): Unit
