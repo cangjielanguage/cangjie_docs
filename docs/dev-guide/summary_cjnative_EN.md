@@ -124,6 +124,7 @@
     - [Running Cangjie Executables](source_en/deploy_and_run/run.md)
 - [Appendix]()
     - [cjc Compilation Options](source_en/Appendix/compile_options.md)
+    - [cjo Artifacts](source_en/Appendix/cjo_artifacts.md)
     - [Linux Version Toolchain Support and Installation](source_en/Appendix/linux_toolchain_install.md)
     - [Runtime Environment Variables Manual](source_en/Appendix/runtime_env.md)
     - [Keywords](source_en/Appendix/keyword.md)
