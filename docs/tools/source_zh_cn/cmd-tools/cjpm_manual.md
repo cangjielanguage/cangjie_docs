@@ -986,8 +986,8 @@ cjpm install org::boo-2.0.0         # 从中心仓安装 org 组织下名为 boo
 <!-- code_no_check -->
 
 ```cangjie
-# xoo.cj
-package org::demo.xoo       # 带有组织名的包声明
+// xoo.cj
+package org::demo.xoo      // 带有组织名的包声明
 
 public let x: Int64 = 0
 ```
@@ -995,8 +995,8 @@ public let x: Int64 = 0
 <!-- code_no_check -->
 
 ```cangjie
-# yoo.cj
-package org::demo.yoo       # 带有组织名的包声明
+// yoo.cj
+package org::demo.yoo      // 带有组织名的包声明
 
 public let y: Int64 = 0
 ```
@@ -1004,11 +1004,11 @@ public let y: Int64 = 0
 <!-- code_no_check -->
 
 ```cangjie
-# demo.cj
-package org::demo           # 带有组织名的包声明
+// demo.cj
+package org::demo          // 带有组织名的包声明
 
-import org::demo.xoo.*      # 带有组织名的包导入
-import org::demo.yoo.*      # 带有组织名的包导入
+import org::demo.xoo.*      // 带有组织名的包导入
+import org::demo.yoo.*      // 带有组织名的包导入
 
 main(): Int64 {
     println(x)
