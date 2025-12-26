@@ -507,6 +507,9 @@ supports _monomorphization_ of mirror types: it generates a separate
 _non-generic_ Objective-C mirror type for each supplied set of valid type
 arguments for the given parameterized Cangjie type.
 
+**NOTE:** The current version only supports mirroring of generic
+types instantiated with primitive types used as type arguments.
+
 For instance, if you have a generic Cangjie class `p.Pair<T,U>`:
 
 ```cangjie
@@ -514,10 +517,10 @@ package p
 public class Pair<T,U> { . . . }
 ```
 
-and want to manipulate instances of `Pair<Int, String>` and `Pair<Foo, Bar>`
-in your Objective-C code, you would add a `generic_object_configuration`
-property to the `[[package]]` entry for `p` in the configuration file, with the
-following content:
+and want to manipulate instances of `Pair<Int, Bool>` in your Objective-C code,
+you would add a `generic_object_configuration` property to the `[[package]]`
+entry for `p` in the `cjc` mirror generation configuration file,
+with the following content:
 
 ```toml
    .  .  .
@@ -526,25 +529,20 @@ name = "p"
 generic_object_configuration  = [
     { name = "Pair",
       type_arguments = [
-          "Int, String",
-          "Foo, Bar"
+          "Int, Bool"
       ] },
        .  .  .
 ```
 
-`cjc` would then generate two separate Objective-C classes:
+`cjc` would then generate a non-generic Objective-C class:
 
 ```objectivec
-@interface G_Int_String
-   .  .  .
-@end
-
-@interface G_Foo_Bar
+@interface Pair_Int_Bool
    .  .  .
 @end
 ```
 
-representing those particular _instantiations_ of the type `Pair<T,U>`.
+representing that particular _instantiation_ of the type `Pair<T,U>`.
 
 Refer to [Generics Instantiations](#cangjie-mirror-generation-reference)
 for more details.
@@ -693,16 +691,16 @@ __attribute__((objc_subclassing_restricted))
 }
 - (Vector*)add:(Vector*)v {
     // Glue code retireving instances of Cangjie Vector associated
-    // with 'self' and 'v', invoking the add() member function 
+    // with 'self' and 'v', invoking the add() member function
     // of Cangjie-self with Cangjie-v passed a parameter, and then
     // creating a new instance of Vector and associating it with the
-    // result of the add() call. 
+    // result of the add() call.
 }
 
 // Glue code
 
 @end
-
+```
 
 Only public struct members and common constructors are mirrored.
 
@@ -734,8 +732,8 @@ to Cangjie:
   is not supported. An attempt to mirror a struct that explicitly
   implements an interface results in a compile-time error.
 
-* Mirroring of generic structs is not supported. An attempt to mirror
-  a generic struct results in a compile-time error.
+* Mirroring of generic structs is supported through monomorphization.
+  See [Generics](#cangjie-generics) for details.
 
 * Mirroring of structs that contain public member properties,
   member operator functions, or primary constructors is not supported.
@@ -817,9 +815,9 @@ public class Zero <: Singleton {
 #import "Singleton.h"
 __attribute__((objc_subclassing_restricted))
 @interface Zero : Singleton
-// Glue code 
+// Glue code
 - (id)init;
-// Glue code 
+// Glue code
 @end
 ```
 
@@ -912,7 +910,7 @@ them to Cangjie:
   information gets lost during mirror generation.
 
 * Mirroring of generic classes is supported via monomorphization.
-  See [Generics]{#cangjie-generics} for more information.
+  See [Generics](#cangjie-generics) for more information.
 
 * Mirroring of classes/interfaces that contain public member properties,
   member operator functions, or primary constructors is not supported.
@@ -971,8 +969,8 @@ mirrored:
   is not supported. An attempt to mirror an enum that explicitly
   implements an interface results in a compile-time error.
 
-* Mirroring of generic enums is not supported. An attempt to mirror
-  a generic enum results in a compile-time error.
+* Mirroring of generic enums is supported through monomorphization.
+  See [Generics](#cangjie-generics) for details.
 
 * Mirroring of enums that contain public member properties or member
   operator functions is not supported. An attempt to mirror an enum
@@ -1009,6 +1007,9 @@ of parameterized Cangjie types, such as `G<Int64>`, are concrete types,
 and therefore can be mirrored into non-generic Objective-C types.
 Such types are also called _monomorphized generics_.
 
+**NOTE:** The current version only supports mirroring of generic
+types instantiated with primitive types used as type arguments.
+
 Use the respective
 [configuration file](#cangjie-mirror-generation-configuration)
 of the `cjc` compiler to specify which instantiations of which types
@@ -1033,13 +1034,13 @@ file:
 ```toml
        .  .  .
     generic_object_configuration  = [
-        { name = "G", type_arguments = ["String", "Int"] },
+        { name = "G", type_arguments = ["Bool", "Int"] },
     ]
        .  .  .
 ```
 
-the compiler will generate Objective-C mirror classes for `G<String>` and
-`G<Int>`, named respectively `G_String` and `G_Int`. ???
+the compiler will generate Objective-C mirror classes for `G<Bool>` and
+`G<Int>`, named respectively `G_Bool` and `G_Int`.
 
 Refer to the
 [Cangjie Mirror Generation Reference](#cangjie-mirror-generation-reference)
@@ -1271,9 +1272,9 @@ Each entry of the array has the following two mandatory properties:
 A string containing the name of a public generic Cangjie type or global
 function defined in the current package.
 
-`types`
+`type_arguments`
 
-An array of strings, each containing valid type arguments for the generic
+An array of strings, each containing valid type argument(s) for the generic
 type or global function the name of which is specified in the `name` property.
 
 > Simply put, "valid" means that the type/function can be instantiated
@@ -1292,17 +1293,19 @@ type or global function the name of which is specified in the `name` property.
 >
 > ```toml
 > generic_object_configuration  = [
->     { name = "G", types = ["Bool"] }
+>     { name = "G", type_arguments = ["Bool"] }
 > ]
 > ```
 > would trigger a compiler error.
+
+**NOTE:** The current version only supports mirroring of generic
+types instantiated with primitive types used as type arguments.
 
 **Example:**
 
 Given the following Cangjie definitions
 
 ```cangjie
-public class C { . . . }
 public class G<T> { . . . }
 public func f<T>(): Unit { . . . }
 public struct S<T,U> { . . . }
@@ -1314,6 +1317,7 @@ the property
 generic_object_configuration  = [
     { name = "G", type_arguments = ["Int32"] },
     { name = "f", type_arguments = ["Float32", "Float64"] }
+    { name = "S", type_arguments = ["Int, Bool"] }
 ]
 ```
 
@@ -1324,9 +1328,11 @@ instantiations and mirrors for them:
     G<Int32>
     f<Float32>
     f<Float64>
+    S<Int, Bool>
 ```
 
-naming the mirrors `G_Int32`, `f_Float32` and `f_Float64` respectively.
+naming the mirrors `G_Int32`, `f_Float32`, `f_Float64`, and `S_Int_Bool` 
+respectively.
 
 
 # Using Objective-C in Cangjie
