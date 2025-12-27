@@ -282,18 +282,6 @@ The member variables of an interop class may have any types. Their public member
 variables that have Objective-C-compatible types may be accessed from both
 Objective-C and Cangjie.
 
-```cangjie
-@ObjCImpl
-class NamedNode <: Node {
-    public var NSName: NSString  // resides in the conjugate wrapper class instance
-    public var cjName: String    // resides in the interop class instance
-    init(name: NString) {
-        NSName = name
-        cjName = name.toCangjieString()
-    }
-}
-```
-
 
 ## Interop Scenarios
 
@@ -1023,7 +1011,7 @@ When compiling the following Cangjie class definition:
 ```cangjie
 public class G<T> {
     private let t: T
-    public init(t: T) { this.t = T }
+    public init(t: T) { this.t = t }
     public func get(): T { t }
 }
 ```
@@ -1324,7 +1312,7 @@ generic_object_configuration  = [
 instructs the `cjc` compiler to generate the following generics
 instantiations and mirrors for them:
 
-```canmgjie
+```cangjie
     G<Int32>
     f<Float32>
     f<Float64>
@@ -1612,7 +1600,7 @@ arguments-append = [
 ### Step 3: Write the Interop Classes {#step-3}
 
 For each Objective-C class skeleton that you included in your interop layer
-design on [Step 1]{#step-1), write a matching Cangjie class as follows:
+design on [Step 1](#step-1), write a matching Cangjie class as follows:
 
 * Use the appropriate package and class names (the Objective-C wrapper class
   that `cjc` will generate for you will have the same fully qualified name).
@@ -1640,7 +1628,7 @@ design on [Step 1]{#step-1), write a matching Cangjie class as follows:
     `unsigned short`       | `UInt16`      |
     `unsigned int`         | `UInt32`      |
     `unsigned long`        | `UInt64`      |
-    `unsugned long long`   | `UInt64`      |
+    `unsigned long long`   | `UInt64`      |
     `float`                | `Float32`     |
     `double`               | `Float64`     |
     `struct`               | `@C struct'`  | (\*)
@@ -1930,7 +1918,7 @@ in the Objective-C part of your application.
    or interop classes themselves, or (b) are 100% analogous to Objective-C
    primitive types. See the Type Mapping table in [Step 3](#step-3) above
    and the Chapter
-   [Objective-C to Cangjie Mapping]#objective-c-to-cangjie-mapping).
+   [Objective-C to Cangjie Mapping](#objective-c-to-cangjie-mapping).
 
 
 # Objective-C to Cangjie Mapping
@@ -2028,7 +2016,7 @@ generator runs. For example, on macOS it can be the following:
 | `unsigned short`     | `UInt16`  |
 | `unsigned int`       | `UInt32`  |
 | `unsigned long`      | `UInt64`  |
-| `unsugned long long` | `UInt64`  |
+| `unsigned long long` | `UInt64`  |
 | `float`              | `Float32` |
 | `double`             | `Float64` |
 
