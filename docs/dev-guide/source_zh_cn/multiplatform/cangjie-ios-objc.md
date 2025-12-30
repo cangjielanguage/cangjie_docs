@@ -1802,6 +1802,10 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 - 非 open 类成员函数参数和返回值允许使用基础数据类型（数值类型、Bool 类型和 Unit 类型）和本包定义的非 open public class 类型，open 类仅支持基本数据类型（数值类型、Bool 类型和 Unit 类型）
 - 不支持通过 extend 对 class 进行扩展
 - 不支持 Cangjie abstract 类
+- 基于 ObjC 的语言特性限制，ObjC 缺乏 protected 访问修饰符，Cangjie 的 protected 成员在映射后对 ObjC 外部代码可见
+- 基于 ObjC 的语言特性限制，Cangjie 的非 open 类在映射后仍可被 ObjC 继承，建议谨慎使用继承以避免设计问题
+- Cangjie class static 成员映射后，Cangjie 的静态成员映射后无法在 ObjC 子类中被重写，且暂不支持在 ObjC 子类中重新定义（redef）
+- 基于 Cangjie open class 生成的 ObjC 代码手动管理内存的要求限制，在编译时需禁用自动引用计数（Automatic Reference Counting，ARC）功能
 
 ### ObjC 使用 Cangjie 泛型数据类型
 
