@@ -453,7 +453,7 @@ This option only takes effect when compiling dynamic libraries or executable fil
 |      Linux      |    Supported   |    Supported    |
 |      macOS      |    Supported   |    Supported    |
 |     Windows     |    Supported   |    Supported    |
-|  OpenHarmonyOS  |  Not Supported |    Supported    |
+|  OpenHarmony  |  Not Supported |    Supported    |
 
 
 ### `--stack-trace-format=[default|simple|all]`
