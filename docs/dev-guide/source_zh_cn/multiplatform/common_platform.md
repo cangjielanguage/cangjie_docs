@@ -67,7 +67,7 @@ common/platform 全局函数必须满足如下限制：
 - platform 全局函数的函数签名必须与同包的 common 全局函数匹配，即参数类型必须一致，返回值类型可以是相同类型或子类型，并需要同时满足以下规则：
     - common 全局函数与全局平台函数必须使用相同的修饰符，如 public，unsafe 等，common/platform 除外。
     - 当 common 全局函数使用命名参数时，platform 全局函数对应位置必须使用相同名字的命名参数。
-    - 每个 platform 全局函数必须匹配唯一的 common 全局函数，不可以出现多个平台全局函匹配相同的 common 全局函数。
+    - 每个 platform 全局函数必须匹配唯一的 common 全局函数，不可以出现多个平台全局函数匹配相同的 common 全局函数。
     - 如果是全局泛型函数，还需满足以下泛型特定限制：
         - common 全局泛型函数和 platform 全局泛型函数必须具有相同个数的类型形参。
         - 当 common 全局泛型函数有泛型约束时，platform 全局泛型函数对应类型形参的泛型约束必须保持一致或者更宽松。
@@ -80,13 +80,13 @@ common/platform 全局函数必须满足如下限制：
 <!-- compile -->
 ```cangjie
 // common file
-pkg cjmp
+package cjmp
 ​
 common func foo1()   // error: 'common' function return type must be specified
 common func foo2(): Unit   // ok
 common func foo3(a!: Int64): Unit   // ok
 common func foo4(a!: Int64 = 1): Unit   // ok
-common func foo5(a: Int64): Unit { println("hello word") }   // ok
+common func foo5(a: Int64): Unit { println("hello world") }   // ok
 
 common func printValue1<T>(value: T): Unit where T <: ToString
 common func printValue2<T>(value: T): Unit where T <: ToString
@@ -97,16 +97,16 @@ common func printValue2<T>(value: T): Unit where T <: ToString
 <!-- compile -->
 ```cangjie
 // platform file
-pkg cjmp
+package cjmp
 ​
 platform func foo2(a: Int64): Unit {}   // error: different arguments
 platform func foo2(): Int64 {}   // error: different return type
 public platform func foo2(): Int64 {}   // error: different modifiers
 platform func foo2(): Unit {}   // ok
 
-platform func foo3(a!: Int64): Unit { println("hello word") }   // ok
+platform func foo3(a!: Int64): Unit { println("hello world") }   // ok
 
-platform func foo4(a!: Int64 = 1): Unit {}   error: 'platform' function parameter can not have default value
+platform func foo4(a!: Int64 = 1): Unit {}   // error: 'platform' function parameter can not have default value
 platform func foo4(a!: Int64): Unit {}   // ok
 
 // common func foo5 有完整实现，无需在 platform 中定义。
@@ -134,7 +134,7 @@ platform func printValue2<T>(value: T): Unit {}
 - common abstract class 匹配 platform sealed abstract class。
 - 如果是 common 修饰的泛型类，还需满足以下泛型特定限制：
     - common 泛型类和 platform 泛型类必须具有相同个数的类型形参。
-    - 当 common 泛型类泛型约束时，platform 泛型类对应类型形参的泛型约束必须保持一致或者更宽松。
+    - 当 common 泛型类有泛型约束时，platform 泛型类对应类型形参的泛型约束必须保持一致或者更宽松。
     - common 泛型类和 platform 泛型类类型形参允许重命名，但参数结构和约束必须匹配。
 - common class 不允许存在隐式的无参构造函数，必须有至少一个显式声明的构造函数。
 - common class 不允许在构造函数中对 common let 变量赋值。
@@ -211,7 +211,7 @@ platform class Container<T> where T <: Comparable<T> {
 - platform init 实现会覆盖 common init 实现。
 - 主构造函数不可以被 common 或 platform 修饰。
 - common/platform class 支持普通构造函数，在 common class 或 platform class 中均可以定义。
-- common class 或 platform class 中必须存在至少一个显示定义的构造函数。
+- common class 或 platform class 中必须存在至少一个显式定义的构造函数。
 - 静态初始化器不支持被 common/platform 修饰。
 
 <!-- compile -->
@@ -1009,7 +1009,7 @@ platform interface A {
 - common interface 和 platform interface 可见性必须相同。
 - common interface 和 platform interface 接口实现性必须相同。
 - common sealed interface 匹配 platform sealed interface。
-- sealed interface 的直接子类型必须定义在在同一个 common 包里。
+- sealed interface 的直接子类型必须定义在同一个 common 包里。
 - 如果是 common 修饰的泛型 interface ，还需满足以下泛型特定限制：
     - common 泛型 interface 和 platform 泛型 interface 必须具有相同个数的类型形参。
     - 当 common 泛型 interface 有泛型约束时，platform 泛型 interface 对应类型形参的泛型约束必须保持一致或者更宽松。
@@ -1155,14 +1155,14 @@ platform extend A {
 }
 ```
 
-对于 common extend，至多存在一个与之匹配的 platform extend。当存在时，需要满足以下要求：
+对于 common extend，至多存在一个与之匹配的 platform extend。当 common 侧所有成员都有完整实现时，可以省略 platform extend。若存在 platform extend，则需要满足以下要求：
 
 - 当[直接扩展](../extension/direct_extension.md)被 common 修饰时， 必须存在唯一的 platform extend。
 - 当[接口扩展](../extension/interface_extension.md)被 common 修饰时， common extend 和 platform extend 必须具有完全相同的接口集合。
 - 如果是 common extend 泛型声明，还需满足以下泛型特定限制：
     - common extend 泛型声明和 platform extend 泛型声明必须具有相同个数的类型形参。
     - 当 common extend 泛型声明有泛型约束时，platform extend 泛型声明对应类型形参的泛型约束必须保持一致。
-    - common extend 泛型声明和 platform extend 泛型声明形参允许重命名，但参数结构和泛型约束必须匹配
+    - common extend 泛型声明和 platform extend 泛型声明形参允许重命名，但参数结构和泛型约束必须匹配。
 
 示例 1：
 
@@ -1200,24 +1200,24 @@ platform extend C <: B {} // error: the interfaces of platform extend do not mat
 <!-- compile -->
 ```cangjie
 // common file
-class Container<T>{
-    var item:?T = Option<T>.None
+class Container<T> {
+    var item: ?T = Option<T>.None
 }
 
-common extend<T> Container<T>{
-    common func setItem(newItem:T):Unit
-    common func getItem():?T
+common extend<T> Container<T> {
+    common func setItem(newItem: T): Unit
+    common func getItem(): ?T
 }
 ```
 
 <!-- compile -->
 ```cangjie
 // platform file
-platform extend<T> Container<T>{
-    platform func setItem(newItem:T){
+platform extend<T> Container<T> {
+    platform func setItem(newItem: T) {
         item = newItem
     }
-    platform func getItem():?T{
+    platform func getItem(): ?T {
         item
     }
 }
@@ -1316,7 +1316,7 @@ common 和 platform 的声明支持导入与导出，其规则与其他类型的
 // common file
 package cmp
 
-public common func foo(){println("common func foo")}
+public common func foo() { println("common func foo") }
 ```
 
 <!-- compile -->
@@ -1325,7 +1325,7 @@ public common func foo(){println("common func foo")}
 package cmp
 public import std.sort.*
 
-public platform func foo(){println("platform func foo")}
+public platform func foo() { println("platform func foo") }
 
 public func goo(){
     println("platform func goo")
@@ -1432,7 +1432,7 @@ public platform func Platform(): String {
 }
 ```
 
-macOs 平台文件。
+macOS 平台文件。
 
 <!-- compile -->
 ```cangjie
