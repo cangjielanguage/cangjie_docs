@@ -54,13 +54,13 @@ $ cjc main.cj --target=aarch64-linux-android31 --sysroot /opt/buildtools/android
 编译完成后需要将以下文件推送到 `Android` 设备：
 
 - 可执行程序以及其依赖的所有动态库： 例如 `main` 和其依赖的 `.so` 动态库文件
-- 仓颉运行时依赖：`$CANGJIE_HOME/runtime/lib/linux_android31_aarch64_llvm/*.so`
+- 仓颉运行时依赖：`$CANGJIE_HOME/runtime/lib/linux_android31_aarch64_cjnative/*.so`
 
 通过使用 `Android` 调试桥 `adb` 工具可以将可执行程序以及仓颉库推送至设备，示例如下：
 
 ```shell
 $ adb push ./main /data/local/tmp/
-$ adb push $CANGJIE_HOME/runtime/lib/linux_android31_aarch64_llvm/* /data/local/tmp/
+$ adb push $CANGJIE_HOME/runtime/lib/linux_android31_aarch64_cjnative/* /data/local/tmp/
 ```
 
 `adb` 工具的详细使用方法请参考 `Android` 官网的 `Android` 调试桥（`adb`）相关说明。
