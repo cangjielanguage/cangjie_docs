@@ -54,13 +54,13 @@ $ cjc main.cj --target=aarch64-linux-android31 --sysroot /opt/buildtools/android
 After compilation, the following files need to be pushed to the `Android` device:
 
 - The executable and all its dependent dynamic libraries: e.g., `main` and its dependent `.so` files
-- Cangjie runtime dependencies: `$CANGJIE_HOME/runtime/lib/linux_android31_aarch64_llvm/*.so`
+- Cangjie runtime dependencies: `$CANGJIE_HOME/runtime/lib/linux_android31_aarch64_cjnative/*.so`
 
 Use the `Android` Debug Bridge `adb` tool to push the executable and Cangjie libraries to the device. Example:
 
 ```shell
 $ adb push ./main /data/local/tmp/
-$ adb push $CANGJIE_HOME/runtime/lib/linux_android31_aarch64_llvm/* /data/local/tmp/
+$ adb push $CANGJIE_HOME/runtime/lib/linux_android31_aarch64_cjnative/* /data/local/tmp/
 ```
 
 For detailed usage of the `adb` tool, please refer to the `Android` Debug Bridge (`adb`) documentation on the official `Android` website.
