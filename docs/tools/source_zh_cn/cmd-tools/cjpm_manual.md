@@ -673,7 +673,7 @@ Summary: TOTAL: 1
     - `--filter=*.*` 匹配所有测试类所有测试用例（结果和*相同）
     - `--filter=*.*Test,*.*case*` 匹配所有测试类中以 `Test` 结尾的用例，或者所有测试类中名字中带有 `case` 的测试用例
     - `--filter=MyTest*.*Test,*.*case*,-*.*myTest` 匹配所有 `MyTest` 开头测试类中以 `Test` 结尾的用例，或者名字中带有 `case` 的用例，或者名字中不带有 `myTest` 的测试用例
-- `--include-tags <value>` 用于获取由 `@Tag` 宏指定的测试类别的子集。 `value` 的形式如下：
+- `--include-tags <value>` 用于获取由 `@Tag` 宏指定的测试类别的子集。`value` 的形式如下：
     - `--include-tags=Unittest` 运行所有标记为 `@Tag[Unittest]` 的测试
     - `--include-tags=Unittest,Smoke` 运行所有标记为 `@Tag[Unittest]`、`@Tag[Smoke]` 任一或同时都有的测试
     - `--include-tags=Unittest+Smoke` 运行所有标记为 `@Tag[Unittest, Smoke]` 同时都有的测试
@@ -1416,7 +1416,7 @@ abc = { path = "libs" }
 
 在这种情况下，`cjpm` 将下载对应存储库的最新版本，并将当前 `commit-hash` 保存在 `cjpm.lock` 文件中。所有后续的 `cjpm` 调用都将使用保存的版本，直到使用 `cjpm update`。
 
-通常需要一些身份验证才能访问 `git` 存储库。 `cjpm` 不要求提供所需的凭据，因此应使用现有的 `git` 身份验证支持。如果用于 `git` 的协议是 `https` ，则需要使用一些现有的 git 凭据帮助程序。在 `Windows` 上，可在安装 `git` 时一起安装凭据帮助程序，默认使用。在 `Linux/macOS` 上，请参见 `git` 官方文档中 `git-config` 的配置说明，了解有关设置凭据帮助程序的详细信息。如果协议是 `ssh` 或 `git` ，则应使用基于密钥的身份验证。如果密钥受密码短语保护，则开发者应确保 `ssh-agent` 正在运行，并且在使用 `cjpm` 之前通过 `ssh-add` 添加密钥。
+通常需要一些身份验证才能访问 `git` 存储库。`cjpm` 不要求提供所需的凭据，因此应使用现有的 `git` 身份验证支持。如果用于 `git` 的协议是 `https`，则需要使用一些现有的 git 凭据帮助程序。在 `Windows` 上，可在安装 `git` 时一起安装凭据帮助程序，默认使用。在 `Linux/macOS` 上，请参见 `git` 官方文档中 `git-config` 的配置说明，了解有关设置凭据帮助程序的详细信息。如果协议是 `ssh` 或 `git`，则应使用基于密钥的身份验证。如果密钥受密码短语保护，则开发者应确保 `ssh-agent` 正在运行，并且在使用 `cjpm` 之前通过 `ssh-add` 添加密钥。
 
 要指定中心仓依赖项，请使用 `version` 字段。例如，下面的配置可用于导入中心仓的源码模块：
 
