@@ -849,7 +849,7 @@ link-option = "-z noexecstack -z relro -z now --strip-all"
 
 ### "output-type"
 
-Output artifact type: `executable`, `static` (static library), or `dynamic` (dynamic library). Defaults to `executable` for `cjpm init`. Only the main module can be `executable`.
+Output artifact type: `executable`, `static` (static library), or `dynamic` (dynamic library). Defaults to `executable` for `cjpm init`.
 
 |     Input     |               Description |
 | :----------: | :---------------------: |

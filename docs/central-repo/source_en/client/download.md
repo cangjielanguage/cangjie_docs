@@ -170,12 +170,13 @@ With the above configuration, even though `pro1` and `pro2` depend on versions `
 ## Installing Central Repository Executables
 
 Central repository modules whose build output type is not `executable` can only be added as dependencies. However, central repository modules whose build output type is `executable` can also be compiled into executable programs and installed locally via the `cjpm install` command. On the artifact page of the central repository website, you can confirm whether an artifact package can be installed via the `install` command by checking for the presence of an `install` description:
-> (Add a screenshot of the web interface and update the following description based on the artifact name and version number in the screenshot)
+
+![artifact-usage](../../figures/artifact-usage.png)
 
 The above artifact package can be installed locally using the following command:
 
 ```text
-cjpm install ${name}-${version}
+cjpm install cangjie_repository_artifact-1.0.0
 ```
 
 Based on the local cache path `CACHE_PATH` configured in [Repository Configuration](./config.md#repository-configuration), the local installation directory is:
@@ -183,13 +184,10 @@ Based on the local cache path `CACHE_PATH` configured in [Repository Configurati
 ```text
 ${CACHE_PATH}
 ├── bin               # Installed executable files
-│    ├── exec_demo_1
-│    └── exec_demo_2
+│    └── cangjie_repository_artifact
 └── libs              # Dynamic libraries required by the executable files, stored in directories named after the corresponding executable file
-     ├── exec_demo_1
-     │    └── ...
-     └── exec_demo_2
+     └── cangjie_repository_artifact
           └── ...
 ```
 
-After installation, you can directly use `${name}` from the command line. If the executable file requires dynamic libraries, the corresponding path must be added to the system's dynamic library environment variable before use.
+After installation, you can directly use `cangjie_repository_artifact` from the command line. If the executable file requires dynamic libraries, the corresponding path must be added to the system's dynamic library environment variable before use.
