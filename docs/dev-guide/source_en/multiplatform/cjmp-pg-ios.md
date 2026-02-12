@@ -556,6 +556,11 @@ or function return type is not supported, the respective member, function
 or constructor cannot be mirrored. The current compiler does not report such
 usages as errors, the respective entity is simply not mirrored.
 
+Mirror types should be compiled into a separate dynamic library with ARC
+support disabled (`-fno-objc-arc` Objective-C compiler option). For details,
+see the notice in the [Classes and Interfaces(#cangjie-classes-and-interfaces)
+section.
+
 
 ## Names {#cangjie-names}
 
@@ -852,8 +857,14 @@ currently preserved even if they clash with Objective-C keywords such as `int`.
 Mirrors of non-`open` classes are attributed
 with `objc_subclassing_restricted`.
 
-Only `public` members and constructors are mirrored. Static initializers
-are not mirrored.
+`public` members and constructors are mirrored. In addition, `protected open`
+instance member functions of `open` classes are also mirrored, so that they
+could be overridden in subclasses. No other class or interface members are
+mirrored.
+
+> **CAUTION:** As there are neither packages nor namespaces of any other kind
+> in Objective-C, the mirrors of such `protected open` member functions are
+> accessible from anywhere in Objective-C code.
 
 **Member variables** are not mirrored in the current version and no means
 for accessing them from Objective-C is provided.
@@ -881,8 +892,15 @@ in Objective-C code:
 
 1. There is no attribute that would make Objective-C methods non-overrideable,
    so methods that mirror non-`open` member functions of `open` classes
-   _can_ be overridden.
-2. Constructors are not inherited in Cangjie, whereas init methods
+   _can_, but obviously should not, be overridden.
+
+2. The current implementation does not support overriding of mirrors
+   of `static` Cangjie methods of `open` classes. They are mirrored
+   into Objective-C class methods (those prefixed with a plus sign `+`),
+   and should never be overridden in subclasses. There is no way to enforce
+   this restriction at compile-time.
+
+3. Constructors are not inherited in Cangjie, whereas init methods
    in Objective-C are inherited just like other methods, which may lead
    to undesirable effects. For instance, consider the following Cangjie
    classes:
@@ -905,10 +923,19 @@ in Objective-C code:
     Cangjie class `A`, not `B`.
 
 
+**NOTICE**: Mirrors of `open` Cangjie classes rely on low-level Objective-C
+features that are not compatible with Automatic Reference Counting (ARC).
+That is why all mirror types should generally be compiled into a separate
+dynamic library with ARC support disabled (`-fno-objc-arc` Objective-C
+compiler option).
+
 The current version imposes a number of severe limitations on the class
 and interface types that can be mirrored, to the extent that it may be
 fair to say that such types need to be designed specifically for exposing
 them to Cangjie:
+
+* Abstract classes are not mirrored and mirrors of concrete classes that
+  implement abstract classes won't compile.
 
 * Function overloading is not supported: mirrors of overloaded member
   functions are generated with the same name, which results in a name clash.
@@ -919,8 +946,8 @@ them to Cangjie:
   classes manually as a workaround.
 
 * Mirroring of classes that implement interfaces other than `Any`
-  is not currently supported. Explicit interface implementation
-  information gets lost during mirror generation.
+  is not currently supported in the sense that explicit interface
+  implementation information gets lost during mirror generation.
 
 * Mirroring of generic classes is supported via monomorphization.
   See [Generics](#cangjie-generics) for more information.
@@ -929,9 +956,15 @@ them to Cangjie:
   member operator functions, or primary constructors is not supported.
   Such entities are simply not mirrored without a warning.
 
-* An attempt to mirror a member function or constructor with an
-  unsupported parameter type, or a member function with an unsupported
-  return type, results in a compile-time error.
+* For member functions and constructors, the only universally supported
+  parameter types are `Bool` and numeric types. For member functions,
+  the only universally supported return value types are `Bool`, numeric
+  types and `Unit`. Specifically for member functions and constructors
+  of non-`open` classes, structs, enums, and non-`open` classes are also
+  supportted as parameter and return value types, provided that they are
+  defined in the same package.
+  Member functions and constructors with unsupported parameter types,
+  as well as member functions with unsupported return types, are not mirrored.
 
 * Inheritance relationships between interfaces are not preserved during
   mirror generation.
@@ -1008,6 +1041,13 @@ mirrored:
 * Mirroring of generic enums is _not_ supported yet; will be supported
   through monomorphization. See [Generics](#cangjie-generics) for details.
 
+* For member functions and constructors, the only supported
+  parameter types are `Bool` and numeric types. For member functions,
+  the only universally supported return value types are `Bool`, numeric
+  types and `Unit`.
+  Member functions and constructors with unsupported parameter types,
+  as well as member functions with unsupported return types, are not mirrored.
+
 * Mirroring of enums that contain member operator functions is not supported.
   An attempt to mirror an enum containing such an entity currently results
   in the generation of invalid Objectove-C code.
@@ -1048,6 +1088,8 @@ Such types are also called _monomorphized generics_.
 
 **NOTE:** The current version only supports mirroring of generic
 types instantiated with primitive types used as type arguments.
+Mirroring of member functions that have their own type arguments
+is not supported either.
 
 Use the respective
 [configuration file](#cangjie-mirror-generation-configuration)
@@ -1061,9 +1103,9 @@ When compiling the following Cangjie class definition:
 
 ```cangjie
 public class G<T> {
-    private let t: T
-    public init(t: T) { this.t = t }
-    public func get(): T { t }
+    private let _t: T
+    public init(t: T) { _t = t }
+    public func get(): T { _t }
 }
 ```
 
