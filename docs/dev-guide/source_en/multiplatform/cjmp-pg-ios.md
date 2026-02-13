@@ -330,13 +330,18 @@ as follows:
 ```cangjie
 package cj
 
+import interoplib.objc.*
+
 public struct Vector {
-    let x: Int32
-    let y: Int32
+    private let _x: Int32
+    private let _y: Int32
+
+    public prop x: Int32 { get() { _x } }
+    public prop y: Int32 { get() { _y } }
 
     public init(x: Int32, y: Int32) {
-        this.x = x
-        this.y = y
+        _x = x
+        _y = y
     }
 
     public func add(v: Vector): Vector {
@@ -359,19 +364,21 @@ similar to the following:
 
 ```objectivec
 // Vector.h
-
-/* glue code */
+#import <Foundation/Foundation.h>
+#import <stddef.h>
 
 __attribute__((objc_subclassing_restricted))
 @interface Vector : NSObject
 
 /* glue code */
 
-@property (readonly, getter=getXField) int32_t x;
-@property (readonly, getter=getYField) int32_t y;
-- (id)init:(int32_t)x:(int32_t)y;
-- (int32_t)getXField;
-- (int32_t)getYField;
+- (id)init:(int32_t)x :(int32_t)y;
+
+@property (readonly, getter=x) int32_t x;
+- (int32_t)x;
+@property (readonly, getter=y) int32_t y;
+- (int32_t)y;
+
 - (Vector*)add:(Vector*)v;
 
 /* glue code */
@@ -380,7 +387,6 @@ __attribute__((objc_subclassing_restricted))
 ```
 
 ```objectivec
-
 // Vector.m
 
 /* glue code */
@@ -394,28 +400,25 @@ __attribute__((objc_subclassing_restricted))
      * it with 'self'.
      */
 }
-
-- (int32_t)getXField {
-    /* Glue code retrieving the value of the 'x' member variable of the
+- (int32_t)x {
+    /* Glue code retrieving the value of the 'x' property of the
      * assocated instance of Cangjie Vector.
      */
 }
-
-- (int32_t)getYField {
-    /* Glue code retrieving the value of the 'y' member variable of the
+- (int32_t)y {
+    /* Glue code retrieving the value of the 'y' property of the
      * assocated instance of Cangjie Vector.
      */
 }
-
 - (Vector*)add:(Vector*)v {
     /* Glue code invoking the 'add' mmber function of the Cangjie Vector
      * instance associated with 'self', passing over the Cangjie Vector
-     * instance assocated with 'v', and wrapping the result in a new
+     * instance associated with 'v', and wrapping the result in a new
      * instance of the Objective-C Vector class.
      */
+}
 
 /* more glue code */
-}
 
 @end
 ```
@@ -458,15 +461,15 @@ APIStrategy="None"       # Expose nothing by default
 [[packages]]
 name="com.example.pkg1"  # From this specific package,
 APIStrategy="Full"       # expose everything
-   .  .  .
+#   .  .  .
 ```
 
 Furthermore, for each package you can use either the `included_apis`
-or `excluded_apis` property to respectivly expose or hide particular types
+or `excluded_apis` property to respectively expose or hide particular types
 and/or members:
 
 ```toml
-   .  .  .
+#   .  .  .
 [[packages]]
 name="com.example.pkg2"          # From this specific package,
 included_apis = [ "Vector",      # Only the type 'Vector'
@@ -511,21 +514,18 @@ entry for `p` in the `cjc` mirror generation configuration file,
 with the following content:
 
 ```toml
-   .  .  .
+#   .  .  .
 [[package]]
 name = "p"
-generic_object_configuration  = [
-    { name = "Pair",
-      type_arguments = [
-          "Int, Bool"
-      ] },
-       .  .  .
+generic_object_configuration = [
+    { name = "Pair", type_arguments = [ "Int, Bool" ] },
+#       .  .  .
 ```
 
 `cjc` would then generate a non-generic Objective-C class:
 
 ```objectivec
-@interface Pair_Int_Bool
+@interface PairIntBool
    .  .  .
 @end
 ```
@@ -556,6 +556,11 @@ or function return type is not supported, the respective member, function
 or constructor cannot be mirrored. The current compiler does not report such
 usages as errors, the respective entity is simply not mirrored.
 
+Mirror types should be compiled into a separate dynamic library with ARC
+support disabled (`-fno-objc-arc` Objective-C compiler option). For details,
+see the notice in the [Classes and Interfaces(#cangjie-classes-and-interfaces)
+section.
+
 
 ## Names {#cangjie-names}
 
@@ -571,24 +576,24 @@ Cangjie Boolean and numeric types that have equivalents among Objective-C
 types are mirrored to those equivalent; those that don't (`Float16`)
 are not supported:
 
-Cangjie type    Objective-C type
--------------   ------------------------
-`Bool`          `BOOL`
-`Int8`          `int8_t`
-`Int16`         `int16_t`
-`Int32`         `int32_t`
-`Int64`         `int64_t`
-`Int`           `int64_t`
-`IntNative`     `ssize_t`
-`UInt8`         `uint8_t`
-`UInt16`        `uint16_t`
-`UInt32`        `uint32_t`
-`UInt64`        `uint64_t`
-`UInt`          `uint64_t`
-`UIntNative`    `size_t`
-`Float16`       Not supported
-`Float32`       `float`
-`Float64`       `double`
+Cangjie type  | Objective-C type
+------------- | -----------------
+`Bool`        | `BOOL`
+`Int8`        | `int8_t`
+`Int16`       | `int16_t`
+`Int32`       | `int32_t`
+`Int64`       | `int64_t`
+`Int`         | `int64_t`
+`IntNative`   | `ssize_t`
+`UInt8`       | `uint8_t`
+`UInt16`      | `uint16_t`
+`UInt32`      | `uint32_t`
+`UInt64`      | `uint64_t`
+`UInt`        | `uint64_t`
+`UIntNative`  | `size_t`
+`Float16`     | Not supported
+`Float32`     | `float`
+`Float64`     | `double`
 
 See [General Considerations](#cangjie-general-considerations)
 for information about the handling of unsupported types.
@@ -692,45 +697,67 @@ __attribute__((objc_subclassing_restricted))
 
 Only public struct members and common constructors are mirrored.
 
-**Member functions** are mirrored into methods with the respective mirror
-types substituted for parameter types and return value type. Mirrors of
-member functions returning `Unit` are mirrored into `void` methods.
-The modifiers `public` and `static` are preserved. Methods that mirror
-non-`open` member functions are modified with `final`.
+**Member functions** are mirrored into methods with the respective
+mirror types substituted for parameter types and return value type. Mirrors
+of member functions returning `Unit` are mirrored into `void` methods.
+Instance member functions are mirrored into instance methods (prefixed
+with a minus sign `-`), `static` member functions are mirrored
+into class methods (prefixed with a plus sign `+`).
 
-**Common constructors** are mirrored into constructors with the respective
+**Member properties** of supported types are mirrored into `@property`
+declarations with the same name and with type that mirrors the Cangjie
+property type, attributed with `readonly`. The getter is mirrored
+into a parameterless method with the same name as the property
+and return type that is the mirror of the Cangjie property type.
+**NOTICE:** Setters are currently _not_ mirrored, so mirrors of `mut`
+member properties are also `readonly`.
+
+**Member variables** of supported types are mirrored into `@property`
+declarations with the same name and with type that mirrors the Cangjie
+variable type, attributed with `readonly`. A getter is synthesized
+to enable access.
+**NOTICE:** Setters are currently _not_ synthesized for `var` member
+variables, so mirrors of the latter are also `readonly`.
+
+**Constructors** are mirrored into constructors with the respective
 mirror types substituted for parameter types. _This includes the default
-constructor that might have been implicitly declared._ ???  The modifier `public`
-is preserved.
+constructor that might have been implicitly declared._
 
 The current version imposes a number of severe limitations on the struct
 types that can be mirrored, to the extent that it may be fair to say
 that a struct type needs to be designed specifically for exposing it
 to Cangjie:
 
-* Member variables are not mirrored and no means for accessing them
-  is provided. This limitation will be removed in a future version.
-  In the meantime, you may add getter functions as a workaround.
+* Function overloading is not supported: mirrors of overloaded member
+  functions are generated with the same name, which results in a name clash.
+
+* Both `let` and `var` member variables are mirrored into `readonly`
+  properties in the current version, so the latter may not be altered
+  from Objective-C code. This limitation will be removed in a future
+  version. In the meantime, you may add setter functions as a workaround.
 
 * Mirroring of `mut` instance member functions is a work in progress.
   They are mirrored, but incorrect glue code is generated in some
-  circumstances.
+ circumstances.
 
-* Mirroring of structs that implement interfaces other than `Any`
-  is not supported. An attempt to mirror a struct that explicitly
-  implements an interface results in a compile-time error.
+* Mirrored structs may implement interfaces other than `Any`, but
+  the "implements" relationship is _not_ propagated to Objecttive-C:
+  th generated `@interface` directive does not bear the names
+  of mirrors of implemented interfaces in angle brackets `<>`
+  after the class name.
+
+* Mirroring of member operator functions is not supported. They are
+  skipped during mirror generation.
 
 * Mirroring of generic structs is supported through monomorphization.
   See [Generics](#cangjie-generics) for details.
 
-* Mirroring of structs that contain public member properties,
-  member operator functions, or primary constructors is not supported.
-  An attempt to mirror a struct containing an entity of one or those
-  kinds results in a compile-time error.
+* Struct member functions and constructors with unsupported parameter
+  types, as well as member functions with unsupported return types,
+  are not mirrored.
 
-* An attempt to mirror a struct member function or constructor with an
-  unsupported parameter type, or a member function with an unsupported
-  return type, results in a compile-time error.
+* A mirrored struct may have direct and/or interface extensions,
+  but they are ignored during mirror generation.
 
 
 ## Classes and Interfaces {#cangjie-classes-and-interfaces}
@@ -830,8 +857,14 @@ currently preserved even if they clash with Objective-C keywords such as `int`.
 Mirrors of non-`open` classes are attributed
 with `objc_subclassing_restricted`.
 
-Only `public` members and constructors are mirrored. Static initializers
-are not mirrored.
+`public` members and constructors are mirrored. In addition, `protected open`
+instance member functions of `open` classes are also mirrored, so that they
+could be overridden in subclasses. No other class or interface members are
+mirrored.
+
+> **CAUTION:** As there are neither packages nor namespaces of any other kind
+> in Objective-C, the mirrors of such `protected open` member functions are
+> accessible from anywhere in Objective-C code.
 
 **Member variables** are not mirrored in the current version and no means
 for accessing them from Objective-C is provided.
@@ -859,8 +892,15 @@ in Objective-C code:
 
 1. There is no attribute that would make Objective-C methods non-overrideable,
    so methods that mirror non-`open` member functions of `open` classes
-   _can_ be overridden.
-2. Constructors are not inherited in Cangjie, whereas init methods
+   _can_, but obviously should not, be overridden.
+
+2. The current implementation does not support overriding of mirrors
+   of `static` Cangjie methods of `open` classes. They are mirrored
+   into Objective-C class methods (those prefixed with a plus sign `+`),
+   and should never be overridden in subclasses. There is no way to enforce
+   this restriction at compile-time.
+
+3. Constructors are not inherited in Cangjie, whereas init methods
    in Objective-C are inherited just like other methods, which may lead
    to undesirable effects. For instance, consider the following Cangjie
    classes:
@@ -883,10 +923,22 @@ in Objective-C code:
     Cangjie class `A`, not `B`.
 
 
+**NOTICE**: Mirrors of `open` Cangjie classes rely on low-level Objective-C
+features that are not compatible with Automatic Reference Counting (ARC).
+That is why all mirror types should generally be compiled into a separate
+dynamic library with ARC support disabled (`-fno-objc-arc` Objective-C
+compiler option).
+
 The current version imposes a number of severe limitations on the class
 and interface types that can be mirrored, to the extent that it may be
 fair to say that such types need to be designed specifically for exposing
 them to Cangjie:
+
+* Abstract classes are not mirrored and mirrors of concrete classes that
+  implement abstract classes won't compile.
+
+* Function overloading is not supported: mirrors of overloaded member
+  functions are generated with the same name, which results in a name clash.
 
 * Member variables are not mirrored and no means for accessing them
   is provided. This limitation will be removed in a future version.
@@ -894,8 +946,8 @@ them to Cangjie:
   classes manually as a workaround.
 
 * Mirroring of classes that implement interfaces other than `Any`
-  is not currently supported. Explicit interface implementation
-  information gets lost during mirror generation.
+  is not currently supported in the sense that explicit interface
+  implementation information gets lost during mirror generation.
 
 * Mirroring of generic classes is supported via monomorphization.
   See [Generics](#cangjie-generics) for more information.
@@ -904,9 +956,25 @@ them to Cangjie:
   member operator functions, or primary constructors is not supported.
   Such entities are simply not mirrored without a warning.
 
-* An attempt to mirror a member function or constructor with an
-  unsupported parameter type, or a member function with an unsupported
-  return type, results in a compile-time error.
+* For member functions and constructors, the only universally supported
+  parameter types are `Bool` and numeric types. For member functions,
+  the only universally supported return value types are `Bool`, numeric
+  types and `Unit`. Specifically for member functions and constructors
+  of non-`open` classes, structs, enums, and non-`open` classes are also
+  supportted as parameter and return value types, provided that they are
+  defined in the same package.
+  Member functions and constructors with unsupported parameter types,
+  as well as member functions with unsupported return types, are not mirrored.
+
+* Inheritance relationships between interfaces are not preserved during
+  mirror generation.
+
+* Interface implementation information is not propagated to Objective-C
+  during mirror generation (notice how in the above example the `@interface`
+  directive in `Singleton.h` does _not_ end with `<Valuable>`).
+
+* A mirrored class may have direct and/or interface extensions,
+  but they are ignored during mirror generation.
 
 
 ## Enums
@@ -950,25 +1018,48 @@ member functions returning `Unit` are mirrored into `void` methods.
 with "`+`"), instance member functions -- into instance methods (prefixed
 with "`-`").
 
+**Member properties** of supported types are mirrored into `@property`
+declarations with the same name and with type that mirrors the Cangjie
+property type, attributed with `readonly`. The getter is mirrored
+into a parameterless method with the same name as the property
+and return type that is the mirror of the Cangjie property type.
+**NOTICE:** Setters are currently _not_ mirrored, so mirrors of `mut`
+member properties are also `readonly`.
+
 The current version imposes a number of limitations on the enum that can be
 mirrored:
 
-* Mirroring of enums that implement interfaces other than `Any`
-  is not supported. An attempt to mirror an enum that explicitly
-  implements an interface results in a compile-time error.
+* Function overloading is not supported: mirrors of overloaded member
+  functions are generated with the same name, which results in a name clash.
 
-* Mirroring of generic enums is supported through monomorphization.
-  See [Generics](#cangjie-generics) for details.
+* Mirrored enums may implement interfaces other than `Any`, but
+  the "implements" relationship is _not_ propagated to Objecttive-C:
+  th generated `@interface` directive does not bear the names
+  of mirrors of implemented interfaces in angle brackets `<>`
+  after the class name.
 
-* Mirroring of enums that contain public member properties or member
-  operator functions is not supported. An attempt to mirror an enum
-  containing such an entity results in a compile-time error.
+* Mirroring of generic enums is _not_ supported yet; will be supported
+  through monomorphization. See [Generics](#cangjie-generics) for details.
 
-* An attempt to mirror an enum member function or constructor with an
-  unsupported parameter type, or a member function with an unsupported
-  return type, results in a compile-time error.
+* For member functions and constructors, the only supported
+  parameter types are `Bool` and numeric types. For member functions,
+  the only universally supported return value types are `Bool`, numeric
+  types and `Unit`.
+  Member functions and constructors with unsupported parameter types,
+  as well as member functions with unsupported return types, are not mirrored.
 
-Enum extension (via `extend`) is not supported.
+* Mirroring of enums that contain member operator functions is not supported.
+  An attempt to mirror an enum containing such an entity currently results
+  in the generation of invalid Objectove-C code.
+
+* Enum member functions and constructors with unsupported parameter
+  types, as well as member functions with unsupported return types,
+  are not mirrored and no warning is issued.
+
+* A mirrored enum may have direct and/or interface extensions,
+  but they are ignored during mirror generation.
+
+
 
 Recursively defined enums are supported:
 
@@ -979,7 +1070,7 @@ public enum Peano {
 
     public func toInt(): Int {
         match (this) {
-            case Z => 0
+                    case Z => 0
             case S(x) => 1 + x.toInt()
         }
     }
@@ -997,6 +1088,8 @@ Such types are also called _monomorphized generics_.
 
 **NOTE:** The current version only supports mirroring of generic
 types instantiated with primitive types used as type arguments.
+Mirroring of member functions that have their own type arguments
+is not supported either.
 
 Use the respective
 [configuration file](#cangjie-mirror-generation-configuration)
@@ -1010,9 +1103,9 @@ When compiling the following Cangjie class definition:
 
 ```cangjie
 public class G<T> {
-    private let t: T
-    public init(t: T) { this.t = t }
-    public func get(): T { t }
+    private let _t: T
+    public init(t: T) { _t = t }
+    public func get(): T { _t }
 }
 ```
 
@@ -1028,7 +1121,7 @@ file:
 ```
 
 the compiler will generate Objective-C mirror classes for `G<Bool>` and
-`G<Int>`, named respectively `G_Bool` and `G_Int`.
+`G<Int>`, named respectively `GBool` and `GInt`.
 
 Refer to the
 [Cangjie Mirror Generation Reference](#cangjie-mirror-generation-reference)
@@ -1112,7 +1205,7 @@ an existing file system location, `cjc` attempts to create a directory there.
 If _`pathname`_ points to something other than a directory, `cjc`
 terminates with an error message.
 
-The default value of _`pathname`_ is either `./java_gen` or `./objc_gen`,
+The default value of _`pathname`_ is either `./java-gen` or `./objc-gen`,
 depending on whether `--enable-interop-cjmapping` is set respectively
 to "`Java`" or "`ObjC`".
 
@@ -1319,7 +1412,7 @@ instantiations and mirrors for them:
     S<Int, Bool>
 ```
 
-naming the mirrors `G_Int32`, `f_Float32`, `f_Float64`, and `S_Int_Bool` 
+naming the mirrors `GInt32`, `fFloat32`, `fFloat64`, and `SIntBool`
 respectively.
 
 
@@ -1610,8 +1703,51 @@ design on [Step 1](#step-1), write a matching Cangjie class as follows:
 * Annotate the interop class with `@ObjCImpl`.
 * Make the interop class inherit the respective `open` mirror class, or `NSObject`
   if it has no explicit supertype in your design.
-* Annotate each non-private class member with `@ForeignName["`_`foreign-name`_`"]`,
-  where _`foreign-name`_ is the desired Objective-C name for that member.
+* Annotate `public` class members and constructors
+  with `@ForeignName["`_`foreign-name`_`"]`, where _`foreign-name`_ is the
+  desired Objective-C name for that member or constructor, according
+  to the following rules:
+
+  1. _Do not_ annotate member functions that override member functions of
+     mirror supertypes. The _presence_ of a `@ForeignName` annotation
+     on such a member function of an interop class triggers a compile-time
+     error.
+
+     > The Objective-C names of such overriding functions must match
+     > the names of the overridden Objective-C methods. The latter are
+     > propagated _from_ Objective-C to Cangjie automatically
+     > via `@ForeignName` annotations in mirror type declarations
+     > (see [Classes and Protocols](#classes-and-protocols) for details).
+     > The `cjc` compiler picks those annotations up.
+
+  2. _Do_ annotate constructors and non-overriding member functions that have
+     _two or more_ parameters. The _absence_ of a `@ForeignName` annotation
+     on such a member function or constructor triggers a compile-time error.
+
+     > The compiler is unable to morph the original Cangjie name
+     > of a member function or constructor with two or more parameters
+     > into a valid Objective-C name automatically. Such names essentially
+     > consist of the respective number of fragments separated with the colon
+     > character `:`.
+
+  3. Overloaded member functions and constructors _must_ be given distinctive
+     Objective-C names using `@ForeignName`, as there is no method overloading
+     in Objective-C. Exacly one of such overloaded entities can retain
+     its original Cangjie name, provided it has at most one parameter.
+
+  4. Annotating the remaining members and constructors with `@ForeignName`
+     is optional. In the absence of a `@ForeignName` annotation,
+     the original Cangjie name of such a member is used as the
+     Objective-C name of the corresponding entity, with colon `:` appended
+     to names of single-parameter methods, whereas the `init`-method
+     matching the sole `public` constructor with one or zero parameters
+     is called respectively `init:` or `init`.
+
+  **NOTE:** The current version of the `cjc` compiler  does _not_ fully
+  validate _`foreign-name`_. In particular, it does not check that the number
+  of colon `:` separators mathes the number of method or constructor
+  parameters.
+
 * Use the following Objective-C-to-Cangjie type mapping (`T'` is either the matching
   value type or the respective mirror type):
 
