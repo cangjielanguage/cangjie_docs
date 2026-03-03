@@ -15,7 +15,7 @@
 | `version` | 模块版本信息 | 是 |
 | `output-type` | 编译输出产物类型，取值为静态库/动态库/可执行 (static/dynamic/executable) | 是 |
 | `authors` | 作者 ID 列表 | 否 |
-| `repository` | 制品仓代码 url | 否 |
+| `repository` | 制品代码仓 url | 否 |
 | `homepage` | 制品主页 url | 否 |
 | `documentation` | 制品文档页 url | 否 |
 | `tag` | 制品标签 | 否 |
