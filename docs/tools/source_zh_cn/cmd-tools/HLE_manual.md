@@ -51,7 +51,7 @@
 | `-j`            | 分析 d.t 或者 d.ets 文件的路径                 | 可选参数 | 只给 ArkTS 生成仓颉 bindings 时使用 |
 | `--module-name` | 自定义生成的仓颉包名                        | 可选参数 | NA |
 | `--lib`         | 生成三方库代码                              | 可选参数 | 只给 ArkTS 生成仓颉 bindings 时使用 |
-| `-c`            | 生成 C 到仓接的绑定代码                              | 可选参数 | 只给 C 语言生成仓颉 bindings 时使用 |
+| `-c`            | 生成 C 到仓颉的绑定代码                              | 可选参数 | 只给 C 语言生成仓颉 bindings 时使用 |
 | `-b`            | 指定 cjbind 二进制的路径                              | 可选参数 | 只给 C 语言生成仓颉 bindings 时使用 |
 | `--clang-args`  | 会被直接传递给 clang 的参数                              | 可选参数 | 只给 C 语言生成仓颉 bindings 时使用 |
 | `--no-detect-include-path`  | 禁用自动 include 路径检测                              | 可选参数 | 只给 C 语言生成仓颉 bindings 时使用 |
