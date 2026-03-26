@@ -269,6 +269,7 @@ cjpm tree success
 >
 > - `-i, --incremental` 选项仅会开启 `cjpm` 包级别的增量编译。开发者可以在配置文件的 `compile-option` 字段自行透传 `--incremental-compile` 和 `--experimental` 编译选项，从而开启 `cjc` 编译器提供的函数粒度增量功能。
 > - `-i, --incremental` 选项目前仅支持基于源码的增量分析。如果导入的库内容有变更，需要开发者重新使用全量方式构建。
+> - 以 `_test.cj` 结尾的源码文件和普通源码文件内的测试用例在 `build` 阶段会被忽略，其余涉及编译的命令 `(run/install/bundle)` 在编译阶段也会忽略上述文件。
 
 编译生成的中间文件默认会存放在 `target` 文件夹，而可执行文件会根据编译模式存放到 `target/release/bin` 或 `target/debug/bin` 文件夹。运行可执行文件的方式可参考 `run`。
 
