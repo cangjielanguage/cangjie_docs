@@ -84,7 +84,7 @@ cjc macros/m.cj --compile-macro --output-dir ./target
 cjc src/demo.cj -o demo.exe --import-path ./target --output-dir ./target
 ```
 
-如果宏包还依赖其他动态库，则需要保证宏包在运行态（宏展开依赖宏包内方法的执行）下能够找到这些依赖。在 Linux 下可以通过设置 `LD_LIBRAYR_PATH`（Windows 下设置 `PATH`）环境变量添加所依赖动态库的路径。
+如果宏包还依赖其他动态库，则需要保证宏包在运行态（宏展开依赖宏包内方法的执行）下能够找到这些依赖。在 Linux 下可以通过设置 `LD_LIBRARY_PATH`（Windows 下设置 `PATH`）环境变量添加所依赖动态库的路径。
 
 > **说明：**
 >
