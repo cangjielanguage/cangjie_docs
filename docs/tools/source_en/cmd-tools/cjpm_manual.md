@@ -264,6 +264,7 @@ cjpm tree success
 >
 > - The `-i, --incremental` option only enables package-level incremental compilation in `cjpm`. Developers can manually pass `--incremental-compile` and `--experimental` compilation options in the configuration file's `compile-option` field to enable function-level incremental compilation provided by the `cjc` compiler.
 > - The `-i, --incremental` option currently only supports incremental analysis based on source code. If imported library content changes, developers need to rebuild using full compilation.
+> - Source files ending with `_test.cj` and test cases within ordinary source files are ignored during the `build` phase. Other compilation-related commands `(run/install/bundle)` also ignore the aforementioned files during the compilation phase.
 
 Intermediate files generated during compilation are stored in the `target` folder by default, while executable files are stored in `target/release/bin` or `target/debug/bin` folders based on the compilation mode. To run the executable, refer to the `run` command.
 
