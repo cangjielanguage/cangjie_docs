@@ -2,7 +2,7 @@
 
 ## Overview
 
-`CJLint (Cangjie Lint)` is a static analysis tool developed based on the Cangjie Language Programming Specification. It identifies code segments that violate programming standards, helps developers detect vulnerabilities, and ensures the production of Cangjie code that meets Clean Source requirements.
+`cjlint (Cangjie Lint)` is a static analysis tool developed based on the Cangjie Language Programming Specification. It identifies code segments that violate programming standards, helps developers detect vulnerabilities, and ensures the production of Cangjie code that meets Clean Source requirements.
 
 ## Usage Instructions
 
