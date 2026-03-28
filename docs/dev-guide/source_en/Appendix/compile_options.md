@@ -588,6 +588,7 @@ Currently, `cjc` supports the following host and target platforms for cross-comp
 | <!--DelRow-->x86_64-apple-darwin | aarch64-linux-ohos |
 | <!--DelRow-->x86_64-apple-darwin | x86_64-linux-ohos  |
 | <!--DelRow-->aarch64-apple-darwin| aarch64-linux-ohos |
+| <!--DelRow-->aarch64-apple-darwin| arm-linux-android23 |
 | <!--DelRow-->aarch64-apple-darwin| aarch64-apple-ios-simulator |
 | <!--DelRow-->aarch64-apple-darwin| x86_64-apple-ios-simulator |
 | <!--DelRow-->x86_64-linux-gnu| aarch64-linux-android26 |
