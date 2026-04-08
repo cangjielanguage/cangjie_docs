@@ -86,7 +86,7 @@ When compiled and executed in a `Windows` environment, it will output `Windows, 
 
 `arch` represents the target platform's processor architecture. It supports `==` and `!=` operators.
 
-Supported architectures: `x86_64`, `aarch64`.
+Supported architectures: `x86_64`, `aarch64`, `arm`.
 
 Usage example:
 
@@ -99,12 +99,15 @@ var arch = "aarch64"
 @When[arch == "x86_64"]
 var arch = "x86_64"
 
+@When[arch == "arm"]
+var arch = "arm"
+
 main() {
     println(arch)
 }
 ```
 
-When compiled and executed on an `x86_64` architecture platform, it will output `x86_64`; on an `aarch64` architecture platform, it will output `aarch64`.
+When compiled and executed on an `x86_64` architecture platform, it will output `x86_64`; on an `aarch64` architecture platform, it will output `aarch64`; on an `arm` architecture platform, it will output `arm`.
 
 ### env
 
