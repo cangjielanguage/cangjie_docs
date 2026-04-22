@@ -38,7 +38,7 @@ $ cjc tool.cj --output-type=dylib
 
 <sup>[frontend]</sup> 在 `cjc-frontend` 中，编译流程仅进行至 `LLVM IR`，因此输出总是 `.bc` 文件，但不同的 `--output-type` 类型仍会影响前端编译的策略。
 
-### `--compile-target==[exe|staticlib|dylib]` <sup>[frontend]</sup>
+### `--compile-target=[exe|staticlib|dylib]` <sup>[frontend]</sup>
 
 该选项专用于 `--output-type=obj` 模式，默认为 `exe`。因生成的 `.obj/.o` 文件属于编译中间产物，通过指定 `--compile-target` 可明确编译器采用对应编译策略，生成适配不同最终产物类型的中间文件；后续编译器可直接将该 `.obj/.o` 文件作为输入进行链接。
 
