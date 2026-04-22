@@ -33,7 +33,7 @@ This compiles `tool.cj` into a dynamic link library. On Linux, `cjc` will genera
 
 <sup>[frontend]</sup> In `cjc-frontend`, the compilation process stops at `LLVM IR`, so the output is always a `.bc` file. However, different `--output-type` values still affect the frontend compilation strategy.
 
-### `--compile-target==[exe|staticlib|dylib]` <sup>[frontend]</sup>
+### `--compile-target=[exe|staticlib|dylib]` <sup>[frontend]</sup>
 
 This option is exclusively applicable to the `--output-type=obj` mode, with a default value of exe. Since the generated `.obj/.o` files are compilation intermediate products, specifying the `--compile-target` option enables the compiler to adopt the corresponding compilation strategy, thus generating intermediate files tailored for different types of final products. The compiler can directly take these `.obj/.o` files as input for subsequent linking processes.
 
