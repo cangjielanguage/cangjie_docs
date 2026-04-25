@@ -1,1 +1,1 @@
-- [Cangjie Rrelease Notes](release-notes/cangjie-1.1.0-release-notes.md)
+- [Cangjie Rrelease Notes](cangjie-1.1.0-release-notes.md)
