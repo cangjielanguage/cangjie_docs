@@ -179,7 +179,6 @@
 
 ### 开发指南
 
-- 跨平台：新增跨平台特性文档“仓颉-Java 互操作”、“仓颉-ObjC 互操作”。
 - cjc 编译选项：新增实验性编译选项“--compile-target=[exe|staticlib|dylib] <sup>[frontend]</sup>”的说明文档。
 - cjc 编译选项：新增编译选项“--pgo-instr-gen=<.profraw>”的说明文档。
 
