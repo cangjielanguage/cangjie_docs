@@ -62,7 +62,6 @@
 - `std.ast` 包支持解析包含组织名语法的仓颉代码。
 - `std.collection` 包提供非迭代器版本容器操作。
 - `std.core` 包增加全局 `public` 函数 `exclusiveScope` 解决仓颉线程调用 `Java` 互操作问题。
-- `std.core` 包新增支持对函数的 `refEq` 重载。
 - `std.core` 包新增 `Error` 支持注册处理函数。
 - `std.core` 包新增异常支持 `causedBy` 。
 - `std.core` 包支持 `Array<Byte>` 无拷贝转 `String` 。
