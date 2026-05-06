@@ -2413,7 +2413,7 @@ import std.unittest.* // testfame
 import std.unittest.testmacro.* // macro_Defintion
 
 @Test
-public class TestM{
+public class TestM {
     @TestCase
     func sayhi(): Unit {
         @Assert(concatM("1", "2"), "12")
@@ -2445,7 +2445,7 @@ import std.unittest.* // testfame
 import std.unittest.testmacro.* // macro_Defintion
 
 @Test
-public class TestK{
+public class TestK {
     @TestCase
     func sayhi(): Unit {
         @Assert(concatk("1", "2"), "12")
@@ -2484,7 +2484,7 @@ import std.unittest.* // testfame
 import std.unittest.testmacro.* // macro_Defintion
 
 @Test
-public class TestZ{
+public class TestZ {
     @TestCase
     func sayhi(): Unit {
         @Assert(concatZ("1", "2"), "12")
