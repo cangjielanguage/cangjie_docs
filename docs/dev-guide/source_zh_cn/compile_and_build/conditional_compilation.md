@@ -351,7 +351,7 @@ feature lion
 
 仓颉交叉编译至目标平台 `aarch64-linux-android31`，条件变量设置如下面代码所示，若需交叉编译至其他平台，请参考 [目标平台和条件编译映射表](#目标平台和条件编译映射表) 配置相应的条件编译选项。
 
-<!-- run -->
+<!-- compile.error -->
 
 ```cangjie
 @When[os == "Linux" && arch == "aarch64" && env == "android"]
