@@ -263,7 +263,7 @@ macro package define
 
 // Macro definition with attribute
 public macro Foo(attrTokens: Tokens, inputTokens: Tokens): Tokens {
-    return attrTokens + inputTokens  // Concatenate attrTokens and inputTokens.
+    return attrTokens + inputTokens // Concatenate attrTokens and inputTokens.
 }
 ```
 
@@ -352,7 +352,7 @@ macro package pkg1
 
 import std.ast.*
 
-public macro getIdent(attr:Tokens, input:Tokens):Tokens {
+public macro getIdent(attr: Tokens, input: Tokens): Tokens {
     return quote(
         let decl = (parseDecl(input) as VarDecl).getOrThrow()
         let name = decl.identifier.value
@@ -373,7 +373,7 @@ macro package pkg2
 import std.ast.*
 import pkg1.*
 
-public macro Prop(input:Tokens):Tokens {
+public macro Prop(input: Tokens): Tokens {
     let v = parseDecl(input)
     @getIdent[ident](input)
     return quote(
@@ -395,6 +395,7 @@ public macro Prop(input:Tokens):Tokens {
 package pkg3
 
 import pkg2.*
+
 class A {
     @Prop
     private let a_: Int64 = 1
@@ -502,6 +503,7 @@ package pkg3
 
 import pkg1.*
 import pkg2.*
+
 @Foo
 struct Data {
     let a = 2
@@ -533,12 +535,14 @@ main(): Int64 {
 <!-- code_no_check -->
 
 ```cangjie
-var a = @foo(@foo1(2 * 3)+@foo2(1 + 3))  // foo1, foo2 have to be defined.
+var a = @foo(@foo1(2 * 3) + @foo2(1 + 3)) // foo1, foo2 have to be defined.
 
 @Foo1 // Foo2 expands first, then Foo1 expands.
 @Foo2[attr: struct] // Attribute macro can be used in nested macro.
-struct Data{
-    @Foo3 @Foo4[123] var a = @bar1(@bar2(2 + 3) + 3)  // bar2, bar1, Foo4, Foo3 expands in order.
+struct Data {
+    @Foo3
+    @Foo4[123]
+    var a = @bar1(@bar2(2 + 3) + 3) // bar2, bar1, Foo4, Foo3 expands in order.
     public func getA() {
         return @foo(a + 2)
     }
@@ -615,9 +619,11 @@ public macro Outer(input: Tokens): Tokens {
     let funcDecl = parseDecl(getTotalFunc)
 
     let decl = (parseDecl(input) as ClassDecl).getOrThrow()
-    decl.body.decls.add(funcDecl)
+    decl
+        .body
+        .decls
+        .add(funcDecl)
     return decl.toTokens()
-
 }
 
 public macro Inner(input: Tokens): Tokens {
@@ -639,8 +645,10 @@ import define.*
 
 @Outer
 class Demo {
-    @Inner var state = 1
-    @Inner var cnt = 42
+    @Inner
+    var state = 1
+    @Inner
+    var cnt = 42
 }
 
 main(): Int64 {
