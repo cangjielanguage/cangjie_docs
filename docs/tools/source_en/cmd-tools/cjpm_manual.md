@@ -711,7 +711,7 @@ Notes on `install`:
 - Git-related options (`--branch`, `--tag`, `--commit`) are ignored unless `--git` is specified. Priority: `--commit` > `--branch` > `--tag`.
 - Existing executables with the same name will be replaced.
 - Executables are installed to `root/bin`, where `root` is the specified or default installation path.
-- Dynamic library dependencies are installed to `root/libs`, organized by program name. Add the corresponding directory to `LD_LIBRARY_PATH` (Linux), `PATH` (Windows), or `DYLD_LIBRARY_PATH` (macOS) for usage.
+- Dynamic library dependencies are installed to `root/libs`, organized by program name. Add the corresponding directory to `LD_LIBRARY_PATH` (Linux), `PATH` (Windows), or `DYLD_FALLBACK_LIBRARY_PATH` (macOS) for usage.
 - The default installation path is added to `PATH` during `envsetup`.
 - Git project installation removes the compilation artifacts directory afterward.
 - If the project has only one executable artifact, `--name` renames it during installation. For multiple artifacts, `--name` installs only the specified artifact.
