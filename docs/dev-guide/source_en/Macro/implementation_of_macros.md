@@ -627,8 +627,8 @@ public macro Inner(input: Tokens): Tokens {
 
 Macro calls:
 
-<!-- run -macro11 -->
-<!-- cfg="--compile-macro" -->
+<!-- run -macro10 -->
+<!-- cfg="--debug-macro" -->
 
 ```cangjie
 import define.*
