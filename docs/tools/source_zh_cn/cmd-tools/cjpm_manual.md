@@ -271,7 +271,7 @@ cjpm tree success
 > - `-i, --incremental` 选项目前仅支持基于源码的增量分析。如果导入的库内容有变更，需要开发者重新使用全量方式构建。
 > - 以 `_test.cj` 结尾的源码文件和普通源码文件内的测试用例在 `build` 阶段会被忽略，其余涉及编译的命令 `(run/install/bundle)` 在编译阶段也会忽略上述文件。
 
-编译生成的中间文件默认会存放在 `target` 文件夹，而可执行文件会根据编译模式存放到 `target/release/bin` 或 `target/debug/bin` 文件夹。运行可执行文件的方式可参考 `run`。
+编译生成的中间文件默认会存放在 `target` 文件夹，而可执行文件会根据编译模式存放到 `target/release/bin` 或 `target/debug/bin` 文件夹。运行可执行文件的方式可参考 [run](#run)。
 
 为了提供可复制的构建，此命令会创建 `cjpm.lock` 文件，该文件包含所有可传递依赖项的确切版本，这些依赖项将用于所有后续构建，需要更新该文件时请使用 `update` 命令。如果有必要保证每个项目参与者都有可复制的构建，那么此文件应提交到版本控制系统中。
 
@@ -315,9 +315,9 @@ src
 输入: cjpm build
 输出:
 cyclic dependency:
+demo.aoo -> demo.boo
 demo.boo -> demo.coo
 demo.coo -> demo.aoo
-demo.aoo -> demo.boo
 
 Error: cjpm build failed
 ```
@@ -940,7 +940,7 @@ cjpm install org::boo-2.0.0         # 从中心仓安装 org 组织下名为 boo
 
 当以上字段在 `cjpm.toml` 中没有使用时，默认为空（对于路径，默认为配置文件所在的路径）。
 
-### "cjc-version"
+### cjc-version
 
 仓颉编译器最低版本要求，必须和当前环境版本兼容才可以执行。一个合法的仓颉版本号是由三段数字组成，中间使用 `.` 隔开，每个数字均为自然数，且没有多余的前缀 `0`。例如：
 
@@ -948,7 +948,7 @@ cjpm install org::boo-2.0.0         # 从中心仓安装 org 组织下名为 boo
 - `1.00.0` 不是一个有效的版本号，因为 `00` 中含有多余的前缀 `0`；
 - `1.2e.0` 不是一个有效的版本号，因为 `2e` 不是自然数。
 
-### "name"
+### name
 
 当前仓颉模块名称，同时也是模块 `root` 包名。
 
@@ -958,7 +958,7 @@ cjpm install org::boo-2.0.0         # 从中心仓安装 org 组织下名为 boo
 >
 > 当前仓颉模块名暂不支持使用 Unicode 字符，仓颉模块名必须是一个仅含 ASCII 字符的合法的标识符。
 
-### "organization"
+### organization
 
 当前仓颉模块组织名。若不配置该字段，则当前仓颉模块为无组织模块。
 
@@ -1031,15 +1031,15 @@ main(): Int64 {
             |-- demo.yoo@org.cjo
 ```
 
-### "description"
+### description
 
 当前仓颉模块描述信息，仅作说明用，不限制格式。
 
-### "version"
+### version
 
 当前仓颉模块版本号。模块版本号的格式同 `cjc-version`。
 
-### "compile-option"
+### compile-option
 
 传给 `cjc` 的额外编译选项。多模块编译时，每个模块设置的 `compile-option` 对该模块内的所有包生效。
 
@@ -1051,7 +1051,7 @@ compile-option = "-O1 -V"
 
 这里填入的命令会在 `build` 执行时插入到编译命令中间，多个命令可以用空格隔开。可用的命令参考《仓颉编程语言开发指南》的[编译选项](../../../dev-guide/source_zh_cn/Appendix/compile_options.md)章节内容。
 
-### "override-compile-option"
+### override-compile-option
 
 传给 `cjc` 的额外全局编译选项。多模块编译时，编译入口模块设置的 `override-compile-option` 对该模块及依赖的所有其他模块的包生效。
 
@@ -1068,7 +1068,7 @@ override-compile-option = "-O1 -V"
 > - `override-compile-option` 会生效于依赖模块内的包，开发者需保证配置的 `cjc` 编译选项与依赖模块内配置的 `compile-option` 没有冲突，否则编译过程中执行 `cjc` 将出现相应报错。对于不冲突的同类 `cjc` 编译选项，`override-compile-option` 内的选项优先级高于 `compile-option`。
 > - 在工作空间编译场景下，仅 `workspace` 内配置的 `override-compile-option` 选项会应用于工作空间内所有模块所有包的编译；即使使用 `-m` 指定以单模块为入口模块进行编译，也不会使用入口模块的 `override-compile-option`。
 
-### "link-option"
+### link-option
 
 传给链接器的编译选项，可用于透传安全编译命令，如下所示:
 
@@ -1080,7 +1080,7 @@ link-option = "-z noexecstack -z relro -z now --strip-all"
 >
 > `link-option` 中配置的命令在编译时只会自动透传给动态库和可执行产物对应的包。
 
-### "output-type"
+### output-type
 
 编译输出产物的类型，包含可执行程序和库两种形式，相关的输入如下表格所示。如果想生成 `cjpm.toml` 时该字段自动填充为 `static`，可使用命令 `cjpm init --type=static --name=modName`，不指定类型时默认生成为 `executable`。
 
@@ -1091,11 +1091,11 @@ link-option = "-z noexecstack -z relro -z now --strip-all"
 | "dynamic" | 动态库 |
 | 其它 |  报错 |
 
-### "src-dir"
+### src-dir
 
 该字段可以指定源码的存放路径，不指定时默认为 `src` 文件夹。
 
-### "target-dir"
+### target-dir
 
 该字段可以指定编译产物的存放路径，不指定时默认为 `target` 文件夹。若该字段不为空，执行 `cjpm clean` 时会删除该字段所指向的文件夹，开发者需自身保证清理该目录行为的安全性。
 
@@ -1107,7 +1107,7 @@ link-option = "-z noexecstack -z relro -z now --strip-all"
 target-dir = "temp"
 ```
 
-### "script-dir"
+### script-dir
 
 该字段可以指定构建脚本产物的存放路径，不指定时默认为 `build-script-cache` 文件夹。若该字段不为空，执行 `cjpm clean` 时会删除该字段所指向的文件夹，开发者需自身保证清理该目录行为的安全性。
 
@@ -1115,7 +1115,7 @@ target-dir = "temp"
 script-dir = "temp"
 ```
 
-### "package-configuration"
+### package-configuration
 
 每个模块的单包可配置项。该选项是个 `map` 结构，需要配置的包名作为 `key`，单包配置信息作为 `value`。当前可配置的信息包含：
 
@@ -1196,7 +1196,7 @@ src
 - 除该模块 `root` 包以外的所有包（该模块下的所有子包，以及该模块直接、间接依赖的其他模块的包含 `root` 包的所有包），会以 `LTO` 优化编译模式编译成 `.bc` 文件；
 - 该模块的 `root` 包会被编译成动态库，并且链入上述所有 `.bc` 文件，无论对应的包是否被该 `root` 包导入。
 
-### "include", "exclude"
+### include, exclude
 
 这两个字段用于 `bundle` 命令，可以指定打包时的文件范围。`include` 和 `exclude` 均为字符串数组形式，每个字符串代表一条匹配规则，匹配规则格式符合 `gitignore` 屏蔽格式。
 
@@ -1258,27 +1258,27 @@ demo
 # 结果：打包 cjpm.toml, README.md 和 src 目录中除了 .txt 文件以外的其他文件
 ```
 
-### "authors"
+### authors
 
 该字段用于配置模块作者 ID 列表，以在中心仓页面展示。
 
-### "repository"
+### repository
 
 若源码模块同时上传到某个在线代码仓库，可在此配置对应 url，以在中心仓页面展示。
 
-### "homepage"
+### homepage
 
 若开发者为源码模块定制了主页，可在此配置对应 url，以在中心仓页面展示。
 
-### "documentation"
+### documentation
 
 若开发者为源码模块定制了文档网页，可在此配置对应 url，以在中心仓页面展示。
 
-### "tag"
+### tag
 
 该字段用于为源码模块指定制品标签，上限 5 个。
 
-### "category"
+### category
 
 该字段用于为源码模块指定制品分类，上限 5 个。
 
@@ -1314,11 +1314,11 @@ demo
 
 配置 `category` 字段时，配置的值大小写不敏感，但是在最后生成的元数据当中会被转化为上述的标准格式。
 
-### "license"
+### license
 
 该字段用于指定源码模块满足的协议列表。
 
-### "workspace"
+### workspace
 
 该字段可管理多个模块作为一个工作空间，支持以下配置项：
 
@@ -1370,7 +1370,7 @@ xoo = { path = "path_xoo" }
 abc = { path = "libs" }
 ```
 
-### "dependencies"
+### dependencies
 
 该字段通过源码方式导入依赖的其它仓颉模块，里面配置了当前构建所需要的其它模块的信息。目前，该字段支持本地路径依赖，远程 `git` 依赖和中心仓依赖。
 
@@ -1464,17 +1464,17 @@ abc = { path = "libs" }
 >
 > 当发生潜在的依赖冲突时，`cjpm` 会基于特定策略决定最终用于编译的源码模块，参考 [`cjpm` 依赖解析策略](#cjpm-依赖解析策略)。
 
-### "test-dependencies"
+### test-dependencies
 
 具有与 `dependencies` 字段相同的格式。它用于指定仅在测试过程中使用的依赖项，而不是构建主项目所需的依赖项。模块开发者应将此字段用于此模块的下游用户不需要感知的依赖项。
 
 `test-dependencies` 内的依赖仅可用于文件名形如 `xxx_test.cj` 的测试文件，在编译时这些依赖将不会被编译。`test-dependencies` 在 `cjpm.toml` 中的配置格式与 `dependencies` 相同。
 
-### "script-dependencies"
+### script-dependencies
 
 具有与 `dependencies` 字段相同的格式。它用于指定仅在编译构建脚本中使用的依赖项，而不是构建主项目所需的依赖项。构建脚本相关功能将在[其他-构建脚本](#构建脚本)章节中详述。
 
-### "replace"
+### replace
 
 具有与 `dependencies` 字段相同的格式。它用于指定间接依赖的同名替换项，配置的依赖项会作为编译该模块时最终使用的依赖版本。
 
@@ -1508,7 +1508,7 @@ abc = { path = "libs" }
 > - 仅入口模块的 `replace` 字段会在编译时生效；
 > - 配置的依赖项为中心仓依赖时，`version` 字段必须为单一版本号。
 
-### "ffi.c"
+### ffi.c
 
 当前仓颉模块外部依赖 `c` 库的配置。该字段配置了依赖该库所需要的信息，包含库名和路径。
 
@@ -1531,11 +1531,11 @@ hello = { path = "./src/" }
 >
 > 在 `Windows` 系统的多模块场景下，若多个模块配置了同名 `c` 库，由于 `Windows` 特殊的库读取策略，会最优先读取运行目录下的库文件，因此最终实际使用的库文件可能与其他系统不一致。
 
-### "profile"
+### profile
 
 `profile` 作为一种命令剖面配置项，用于控制某个命令执行时的默认配置项。目前支持如下场景：`build`、`test`、`bench`、`run` 和 `customized-option`。
 
-#### "profile.build"
+#### profile.build
 
 ```text
 [profile.build]
@@ -1641,7 +1641,7 @@ demo = "dynamic"
 - 若报错信息中包含形如 `because of combined module 'demo'` 的报错，说明模块 `demo` 被配置成了 `combined` 模块，并且存在 `demo` 的子包直接或间接依赖 `demo` 包的情况，开发者可以查找并删去该模块子包中存在的对 `root` 包的导入，或者直接去除 `combined` 配置，从而解决此类循环依赖；
 - 若报错信息中包含形如 `between combined modules` 的报错，说明该条目中两个 `root` 包对应模块都被配置成了 `combined` 模块，且存在模块间（包括子包之间）的相互依赖，开发者可以查找并删去其中一个 `combined` 模块对另一个 `combined` 模块的包导入，或者直接去除两个模块的 `combined` 配置，从而解决此类循环依赖。
 
-#### "profile.test"
+#### profile.test
 
 ```text
 [profile.test] # 使用举例
@@ -1680,7 +1680,7 @@ PATH = { value = "/usr/bin", splice-type = "prepend" }
     - `report-format` 指定报告输出格式，当前单元测试报告仅支持 `xml` 格式和 `xml-per-package`（可忽略大小写），使用其它值将会抛出异常（不能通过 `@Configure` 配置），性能测试报告仅支持 `csv` 和 `csv-raw` 格式
     - `verbose` 指定显示编译过程详细信息，参数值类型为 `BOOL`，即值可为 `true` 或 `false`
 
-#### "profile.test.build"
+#### profile.test.build
 
 用于指定支持的编译选项，其列表如下:
 
@@ -1688,7 +1688,7 @@ PATH = { value = "/usr/bin", splice-type = "prepend" }
 - `lto` 指定是否开启 `LTO` 优化编译模式，该值可为 `thin` 或 `full` ，该功能仅支持编译目标为 `Linux/OpenHarmony` 平台的场景
 - `mock` 显式设置 `mock` 模式，可能的选项：`on`、`off`、`runtime-error` 。对 `test` / `build` 子命令默认值为 `on`，对于 `bench` 子命令默认值为 `runtime-error`
 
-#### "profile.test.env"
+#### profile.test.env
 
 用于在 `test` 命令时运行可执行文件时配置临时环境变量，`key` 值为需要配置的环境变量的名称，有如下配置项:
 
@@ -1699,7 +1699,7 @@ PATH = { value = "/usr/bin", splice-type = "prepend" }
     - `prepend`: 该配置会拼接在环境中已有的同名环境变量之前
     - `append`: 该配置会拼接在环境中已有的同名环境变量之后
 
-#### "profile.bench"
+#### profile.bench
 
 ```text
 [profile.bench] # 使用举例
@@ -1722,19 +1722,19 @@ verbose = true
     - `verbose` 指定显示编译过程详细信息，参数值类型为 `BOOL`, 即值可为 `true` 或 `false`
     - `baseline-path` 与当前性能结果进行比较的现有报告的路径。默认情况下它使用 `--report-path` 值。
 
-#### "profile.bench.build"
+#### profile.bench.build
 
 用于指定为 `cjpm bench` 构建可执行文件时使用的附加编译选项。配置与 `profile.test.build` 相同。
 
-#### "profile.bench.env"
+#### profile.bench.env
 
 支持配置在 `bench` 命令时运行可执行文件时的环境变量配置，配置方式同 `profile.test.env`。
 
-#### "profile.run"
+#### profile.run
 
 运行可执行文件时的选项，支持配置在 `run` 命令时运行可执行文件时的环境变量配置 `env`，配置方式同 `profile.test.env`。
 
-#### "profile.customized-option"
+#### profile.customized-option
 
 ```text
 [profile.customized-option]
@@ -1749,7 +1749,7 @@ cfg3 = "-O2"
 >
 > 这里的条件值必须是一个合法的标识符。
 
-### "target"
+### target
 
 多后端、多平台隔离选项，用于配置不同后端、不同平台情况下的一系列不同配置项。以 `Linux` 系统为例，`target` 配置方式如下：
 
@@ -1791,7 +1791,7 @@ cfg3 = "-O2"
 
 开发者可以通过配置 `target.target-name.debug` 和 `target.target-name.release` 字段为该 `target` 额外配置在 `debug` 和 `release` 编译模式下特有的配置，可配置的配置项同上。配置于此类字段的配置项将仅应用于该 `target` 的对应编译模式。
 
-#### "target.target-name[.debug/release].bin-dependencies"
+#### target.target-name[.debug/release].bin-dependencies
 
 该字段用于导入已编译好的、适用于指定 `target` 的仓颉库产物文件，以导入下述的 `pro0` 模块和 `pro1` 模块的三个包来举例说明。
 
@@ -1859,7 +1859,7 @@ main(): Int64 {
 > 依赖的仓颉动态库文件可能是其他模块通过配置 `profile.build.combined` 生成的 `root` 包编译产物，包含其所有子包的符号。因此，在依赖检查时，如果找不到某个包对应的仓颉库，会使用该包对应的 `root` 包作为依赖，并打印告警提示。开发者需要保证以此方式导入的 `root` 包是通过对应方式生成的仓颉库文件，否则该库文件可能不会包含子包的符号，导致编译报错。
 > 例如，源码中通过 `import demo.aoo` 导入了 `demo.aoo` 包，在二进制依赖中没有找到该包对应的仓颉库，`cjpm` 会尝试寻找该包对应的 `root` 包的动态库，即 `libdemo.so`，如果找到则使用该库作为依赖。
 
-#### "target.target-name.compile-macros-for-target"
+#### target.target-name.compile-macros-for-target
 
 该字段用于配置宏包的交叉编译方式，有如下三种情况：
 
@@ -1884,7 +1884,7 @@ main(): Int64 {
   compile-macros-for-target = ["pkg1", "pkg2"] # 配置项为字符串数字形式，可选值是宏包名
 ```
 
-#### "target" 相关字段合并规则
+#### target 相关字段合并规则
 
 `target` 配置项中的内容可能同时存在于 `cjpm.toml` 的其他选项中，例如 `compile-option` 字段在 `package` 字段中也可以存在，区别在于 `package` 中的该字段会应用于全部 `target`。`cjpm` 对这些重复的字段会按照特定的方式将所有可应用的配置合并。以 `x86_64-unknown-linux-gnu` 的 `debug` 编译模式为例，有如下的 `target` 配置：
 
@@ -2618,7 +2618,7 @@ cjpm build --no-feature-deduce --enable-features=user.tests_in_source_sets.arch.
 
 上述示例中，通过 `user.tests_in_source_sets.arch.big` 制定了具体所编译的 `source-set` 生成了二进制文件。具体各个配置项含义、选项含义与项目结构信息将在后续逐步展开说明。
 
-关于跨平台编译的通用概念与配置原理，请参见[跨平台编译](../../../dev-guide/source_zh_cn/multiplatform/common_platform.md#跨平台编译)。
+<!--Del-->关于跨平台编译的通用概念与配置原理，请参见[跨平台编译](../../../dev-guide/source_zh_cn/multiplatform/common_platform.md#跨平台编译)。<!--DelEnd-->
 
 #### feature
 
