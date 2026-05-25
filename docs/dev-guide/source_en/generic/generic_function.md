@@ -44,7 +44,7 @@ func times2plus10(a: Int64) {
 }
 
 main() {
-  println(times2plus10(9))
+    println(times2plus10(9))
 }
 ```
 
@@ -64,9 +64,13 @@ Local functions can also be generic. For example, the generic function `id` can 
 
 ```cangjie
 func foo(a: Int64) {
-    func id<T>(a: T): T { a }
+    func id<T>(a: T): T {
+        a
+    }
 
-    func double(a: Int64): Int64 { a + a }
+    func double(a: Int64): Int64 {
+        a + a
+    }
 
     return (id<Int64> ~> double)(a) == (double ~> id<Int64>)(a)
 }
@@ -84,7 +88,7 @@ true
 
 ## Generic Member Functions
 
-Member functions of classes, structs, and enums can be generic. For example:
+Member functions of classes, structs, enums, and interface can be generic. For example:
 
 <!-- verify -->
 
@@ -109,13 +113,43 @@ enum C {
     }
 }
 
+interface I {
+    func doo<T>(a: T): Unit where T <: ToString
+}
+
+class D <: I {
+    public func doo<T>(a: T): Unit where T <: ToString {
+        println("${a}")
+    }
+}
+
+abstract class E {
+    public func eoo1<T>(a: T): Unit where T <: ToString
+    public open func eoo2<T>(a: T): Unit where T <: ToString
+}
+
+class F <: E {
+    public func eoo1<T>(a: T): Unit where T <: ToString {
+        println("${a}")
+    }
+    public func eoo2<T>(a: T): Unit where T <: ToString {
+        println("${a}")
+    }
+}
+
 main() {
     var a = A()
     var b = B()
     var c = C.X
+    var d = D()
+    var f = F()
     a.foo<Int64>(10)
     b.bar<String>("abc")
     c.coo<Bool>(false)
+    d.doo<String>("doo")
+    f.eoo1<String>("eoo1")
+    f.eoo2<String>("eoo2")
+    return 0
 }
 ```
 
@@ -125,6 +159,9 @@ The program output will be:
 10
 abc
 false
+doo
+eoo1
+eoo2
 ```
 
 When extending types using the `extend` declaration, the functions within the extension can also be generic. For example, we can add a generic member function to the `Int64` type:
@@ -168,7 +205,7 @@ class ToPair {
 }
 
 main() {
-    var res: ArrayList<Int64> = ArrayList([1,2,3,4])
+    var res: ArrayList<Int64> = ArrayList([1, 2, 3, 4])
     var a: (Int64, Int64) = ToPair.fromArray<Int64>(res)
 }
 ```

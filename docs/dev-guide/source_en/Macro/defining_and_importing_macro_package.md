@@ -32,6 +32,7 @@ Refer to the following examples:
 
   ```cangjie
   macro package A
+
   import std.ast.*
 
   public macro M1(input: Tokens): Tokens {
@@ -72,6 +73,7 @@ Refer to the following examples:
 
   ```cangjie
   macro package C
+
   public import A.* // Correct: Macro packages allow re-exporting within a macro package.
   public import B.* // Correct: Non-macro packages are also allowed to be re-exported in a macro package.
   import std.ast.*
@@ -83,7 +85,7 @@ Refer to the following examples:
 
   The compilation command is as follows. Note that explicit linking of package B's dynamic library is required:
 
-  ```cangjie
+  ```shell
   cjc C.cj --compile-macro -L. -lB
   ```
 

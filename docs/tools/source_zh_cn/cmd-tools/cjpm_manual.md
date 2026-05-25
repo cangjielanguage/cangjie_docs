@@ -78,6 +78,24 @@ Available options:
 
 ## 命令说明
 
+`cjpm` 命令列表如下：
+
+|命令名|命令描述|
+|---|---|
+|[`init`](#init)|初始化仓颉模块或者工作空间|
+|[`check`](#check)|检查项目中所需的依赖项|
+|[`update`](#update)|更新远程依赖信息|
+|[`tree`](#tree)|可视化展示仓颉源码中的包依赖关系|
+|[`build`](#build)|构建当前仓颉项目|
+|[`run`](#run)|运行当前项目构建出的可执行产物|
+|[`test`](#test)|编译并运行单元测试用例|
+|[`bench`](#bench)|编译并运行性能用例|
+|[`clean`](#clean)|清理构建过程中的临时产物|
+|[`bundle`](#bundle)|将当前仓颉项目打包成制品源码包|
+|[`publish`](#publish)|将制品源码包上传到中心仓|
+|[`install`](#install)|安装仓颉项目|
+|[`uninstall`](#uninstall)|卸载仓颉项目|
+
 ### init
 
 `init` 用于初始化一个新的仓颉模块或者工作空间。初始化模块时，默认在当前文件夹创建配置文件 `cjpm.toml`，并新建 `src` 源码文件夹。如果该模块的产物为可执行类型，则会在 `src` 下生成默认的 `main.cj` 文件，并在编译后打印输出 `hello world`。初始化工作空间时仅会创建 `cjpm.toml` 文件，默认会扫描该路径下已有的仓颉模块并添加到 `members` 字段中。若已存在 `cjpm.toml` 文件，或源码文件夹内已存在 `main.cj`，则会跳过对应的文件创建步骤。
@@ -831,7 +849,7 @@ target
 - `git` 相关配置仅在配置 `--git` 后生效，否则会被忽略，包括 `--branch`, `--tag` 和 `--commit`。当配置多个 `git` 相关配置时，仅会生效优先级更高的配置，优先级排序为 `--commit` > `--branch` > `--tag`。
 - 若已存在同名可执行文件被安装，则原来的文件将被替换。
 - 假设安装路径为 `root`（`root` 为配置的安装路径，不配置则为默认路径），则可执行文件将被安装于 `root/bin`。
-- 若项目存在动态库依赖，可执行程序所需动态库会被安装到 `root/libs`，按程序名分隔为若干目录，开发者需要将对应目录加入相应路径（`Linux` 中为 `LD_LIBRARY_PATH`，`Windows` 中为 `PATH`，`macOS` 中为 `DYLD_LIBRARY_PATH`）方可使用。
+- 若项目存在动态库依赖，可执行程序所需动态库会被安装到 `root/libs`，按程序名分隔为若干目录，开发者需要将对应目录加入相应路径（`Linux` 中为 `LD_LIBRARY_PATH`，`Windows` 中为 `PATH`，`macOS` 中为 `DYLD_FALLBACK_LIBRARY_PATH`）方可使用。
 - 默认安装路径（`Linux` / `macOS` 系统下默认为 `$HOME/.cjpm`，`Windows` 系统下默认为 `%USERPROFILE%/.cjpm`）会在 `envsetup` 中被加入 `PATH`。
 - `install` 在安装 `git` 项目后，对应的编译产物目录会被清除。
 - 在待安装项目仅存在一个可执行文件产物时，指定 `--name` 会将其更名后安装；若存在多个可执行文件产物，指定 `--name` 会仅安装对应名称的产物。
@@ -1789,7 +1807,7 @@ cfg3 = "-O2"
 
 > **注意：**
 >
-> `cjc` 支持的 target 名称列表及对应的系统平台，请参考[交叉编译](../../../dev-guide/source_zh_cn/compile_and_build/cross_compilation.md#交叉编译)。
+> `cjc` 支持的 target 名称列表及对应的系统平台，请参考[交叉编译](../../../dev-guide/source_zh_cn/compile_and_build/cross_compilation.md)。
 
 开发者可以通过配置 `target.target-name` 字段为某个 `target` 添加一系列配置项。`target` 的名称可以在相应的仓颉环境下通过命令 `cjc -v` 获取，命令输出中的 `Target` 项目即为该环境对应的 `target` 名称。上述用例应用于 `Linux` 系统，其他平台也适用，同样可以通过命令 `cjc -v` 获取 `target` 名称。
 
@@ -2633,7 +2651,7 @@ cjpm build --no-feature-deduce --enable-features=user.tests_in_source_sets.arch.
 
 上述示例中，通过 `user.tests_in_source_sets.arch.big` 制定了具体所编译的 `source-set` 生成了二进制文件。具体各个配置项含义、选项含义与项目结构信息将在后续逐步展开说明。
 
-<!--Del-->关于跨平台编译的通用概念与配置原理，请参见[跨平台编译](../../../dev-guide/source_zh_cn/multiplatform/common_platform.md#跨平台编译)。<!--DelEnd-->
+关于跨平台编译的通用概念与配置原理，请参见[跨平台编译](../../../dev-guide/source_zh_cn/multiplatform/common_platform.md#跨平台编译)。
 
 #### feature
 

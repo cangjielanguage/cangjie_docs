@@ -1,6 +1,6 @@
 # 其他使用模式的地方
 
-模式除了可以在 `match` 表达式中使用外，还可以使用在变量定义和 `for in` 表达式中，例如，等号左侧是个模式，`for` 关键字和 `in` 关键字之间是个模式。同时，`if` 表达式和 `while` 表达式中的条件也可以使用模式，具体详见 [“let pattern” 的“条件”示例](../basic_programming_concepts/expression.md#涉及-let-pattern-的条件示例)。
+模式除了可以在 `match` 表达式中使用外，还可以使用在变量定义和 `for in` 表达式中，例如，等号左侧是个模式，`for` 关键字和 `in` 关键字之间是个模式。同时， `if` 表达式和 `while` 表达式中的条件也可以使用模式，具体详见 [“let pattern” 的“条件”示例](../basic_programming_concepts/expression.md#涉及-let-pattern-的条件示例)。
 
 但是，并不是所有的模式都能使用在变量定义和 `for in` 表达式中，只有 `irrefutable` 的模式才能在这两处被使用，所以只有通配符模式、绑定模式、`irrefutable` tuple 模式和 `irrefutable` enum 模式是允许的。
 
@@ -63,7 +63,6 @@
             println("Sum = ${i + j}")
         }
     }
-
     ```
 
    上例中，变量定义时使用了 tuple 模式，表示对 `(100, 200)` 进行解构并分别和 `x` 与 `y` 进行绑定，效果上相当于定义了两个变量 `x` 和 `y`。`for in` 表达式中使用了 tuple 模式，表示依次将 `[(1, 2), (3, 4), (5, 6)]` 中的 tuple 类型的元素取出，然后解构并分别和 `i` 与 `j` 进行绑定，循环体中输出 `i + j` 的值。编译执行上述代码，输出结果为：
@@ -84,6 +83,7 @@
     enum RedColor {
         Red(Int64)
     }
+
     main() {
         let Red(red) = Red(0)
         println("red = ${red}")

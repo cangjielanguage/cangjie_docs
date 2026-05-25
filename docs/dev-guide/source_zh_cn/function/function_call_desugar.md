@@ -12,7 +12,7 @@
 
 ```cangjie
 func myIf(a: Bool, fn: () -> Int64) {
-    if(a) {
+    if (a) {
         fn()
     } else {
         0
@@ -20,9 +20,9 @@ func myIf(a: Bool, fn: () -> Int64) {
 }
 
 func test() {
-    myIf(true, { => 100 }) // General function call
+    myIf(true, {=> 100}) // General function call
 
-    myIf(true) {        // Trailing closure call
+    myIf(true) { // Trailing closure call
         100
     }
 }
@@ -35,10 +35,12 @@ func test() {
 <!-- compile -->
 
 ```cangjie
-func f(fn: (Int64) -> Int64) { fn(1) }
+func f(fn: (Int64) -> Int64) {
+    fn(1)
+}
 
 func test() {
-    f { i => i * i }
+    f {i => i * i}
 }
 ```
 
@@ -48,7 +50,7 @@ func test() {
 
 ### Pipeline 表达式
 
-当需要对输入数据做一系列的处理时，可以使用 `pipeline` 表达式来简化描述。`pipeline` 表达式的语法形式如下：`e1 |> e2`。等价于如下形式的语法糖：`let v = e1; e2(v)`。
+当需要对输入数据做一系列的处理时，可以使用 `pipeline` 表达式来简化描述。`pipeline` 表达式的语法形式如下：`e1 |> e2`。等价于如下形式的语法糖：`let v = e1; e2(v)` 。
 
 其中 `e2` 是函数类型的表达式，`e1` 的类型是 `e2` 的参数类型的子类型。
 
@@ -95,6 +97,7 @@ let res = arr |> inc |> sum // res = 12
 func f(x: Int64): Float64 {
     Float64(x)
 }
+
 func g(x: Float64): Float64 {
     x
 }
@@ -119,14 +122,20 @@ let lambdaComp = {x: Int64 => x} ~> f // The same as { x: Int64 => f({x: Int64 =
 <!-- compile -->
 
 ```cangjie
-func h1<T>(x: T): T { x }
-func h2<T>(x: T): T { x }
+func h1<T>(x: T): T {
+    x
+}
+
+func h2<T>(x: T): T {
+    x
+}
+
 var hh = h1<Int64> ~> h2<Int64> // The same as { x: Int64 => h2<Int64>(h1<Int64>(x)) }
 ```
 
 > **注意：**
 >
-> 表达式 `f ~> g` 中，会先对 `f` 求值，然后对 `g` 求值，最后才会进行函数的组合。
+> 表达式 f ~> g 中，会先对 f 求值，然后对 g 求值，最后才会进行函数的组合。
 
 另外，流操作符不能与无默认值的命名形参函数直接一同使用，这是因为无默认值的命名形参函数必须给出命名实参才可以调用。例如：
 
@@ -135,20 +144,20 @@ var hh = h1<Int64> ~> h2<Int64> // The same as { x: Int64 => h2<Int64>(h1<Int64>
 ```cangjie
 func f(a!: Int64): Unit {}
 
-var a = 1 |> f  // Error
+var a = 1 |> f // Error
 ```
 
-如需使用，开发者可以通过 lambda 表达式传入 `f` 函数的命名实参：
+如果需要使用，开发者可以通过 lambda 表达式传入 `f` 函数的命名实参：
 
 <!-- compile -->
 
 ```cangjie
 func f(a!: Int64): Unit {}
 
-var x = 1 |>  { x: Int64 => f(a: x) } // OK
+var x = 1 |> {x: Int64 => f(a: x)} // OK
 ```
 
-出于相同原因，当 `f` 的参数有默认值时，直接与流运算符一起使用也是错误的，例如：
+由于相同的原因，当 `f` 的参数有默认值时，直接与流运算符一起使用也是错误的，例如：
 
 <!-- compile.error -->
 
@@ -165,7 +174,7 @@ var a = 1 |> f // Error
 ```cangjie
 func f(a: Int64, b!: Int64 = 2): Unit {}
 
-var a = 1 |> f  // OK
+var a = 1 |> f // OK
 ```
 
 当然，如果想要在调用 `f` 时，为参数 `b` 传入其他参数，那么也需要借助 lambda 表达式：
@@ -175,7 +184,7 @@ var a = 1 |> f  // OK
 ```cangjie
 func f(a: Int64, b!: Int64 = 2): Unit {}
 
-var a = 1 |> {x: Int64 => f(x, b: 3)}  // OK
+var a = 1 |> {x: Int64 => f(x, b: 3)} // OK
 ```
 
 ## 变长参数
@@ -216,7 +225,7 @@ func length(arr!: Array<Int64>) {
 }
 
 main() {
-    println(length())        // Error, expected 1 argument, found 0
+    println(length()) // Error, expected 1 argument, found 0
     println(length(1, 2, 3)) // Error, expected 1 argument, found 3
 }
 ```
@@ -228,8 +237,12 @@ main() {
 ```cangjie
 class Counter {
     var total = 0
-    init(data: Array<Int64>) { total = data.size }
-    operator func ()(data: Array<Int64>) { total += data.size }
+    init(data: Array<Int64>) {
+        total = data.size
+    }
+    operator func ()(data: Array<Int64>) {
+        total += data.size
+    }
 }
 
 main() {
@@ -280,8 +293,13 @@ array: [1, 2]
 <!-- compile.error -->
 
 ```cangjie
-func f(arr: Array<Int64>) { arr.size }
-func f(first: Int64, arr: Array<Int64>) { first + arr.size }
+func f(arr: Array<Int64>) {
+    arr.size
+}
+
+func f(first: Int64, arr: Array<Int64>) {
+    first + arr.size
+}
 
 main() {
     println(f(1, 2, 3)) // Error

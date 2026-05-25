@@ -38,6 +38,24 @@ Options:
 cjcov -version 或者 cjcov -v
 ```
 
+`cjcov` 选项说明如下：
+
+|选项|选项描述|
+|---|---|
+|[`-h, --help`](#cjcov--h----help)|显示基本使用方法|
+|[`-v, --version`](#cjcov--v----version)|显示版本号|
+|[`--verbose`](#cjcov---verbose)|将日志信息生成到 `cjcov_logs` 目录中|
+|[`--html-details`](#cjcov---html-details)|生成源代码文件对应的 `html` 覆盖报告|
+|[`-x, --xml`](#cjcov--x----xml)|在指定输出路径生成 `coverage.xml` 文件|
+|[`-j, --json`](#cjcov--j----json)|在指定输出路径生成 `coverage.json` 文件|
+|[`-k, --keep`](#cjcov--k-----keep)|保留生成的 `gcov` 中间文件|
+|[`-b, --branches`](#cjcov--b----branches)|生成分支覆盖率信息|
+|[`-r ROOT, --root=ROOT`](#cjcov--r-root----rootroot)|在 `ROOT` 目录或其递归子目录中查找 `gcda` 文件|
+|[`-o OUTPUT, --output=OUTPUT`](#cjcov--o-output-----outputoutput)|指定 `html` 覆盖率报告的输出路径|
+|[`-s SOURCE, --source=SOURCE`](#-s-source----sourcesource)|指定仓颉源文件的代码路径|
+|[`-e EXCLUDE, --exclude=EXCLUDE`](#-e-exclude----excludeexclude)|表示不需要生成覆盖率信息的源文件列表|
+|[`-i INCLUDE, --include=INCLUDE`](#-i-include----includeinclude)|表示需要生成覆盖率信息的源文件列表|
+
 ### 使用步骤
 
 #### 单文件场景
@@ -404,7 +422,7 @@ src
     <!-- compile -->
 
     ```cangjie
-    let HIGH_1_UInt8: UInt8 = 0b10000000;
+    let HIGH_1_UInt8: UInt8 = 0b10000000
     ```
 
 - 成员变量仅声明未初始化赋值，示例如下：
@@ -464,7 +482,7 @@ src
 **解决方法：**
 
 方法 1：设置 `CANGJIE_HOME` 环境变量，`cjcov` 可通过 `CANGJIE_HOME` 环境变量找到 `llvm-cov` 命令，设置方法如下：
-假设 `which cjc` 显示 `/work/cangjie/bin/cjc`, 并且 `/work/cangjie/bin/llvm/bin` 和 `/work/cangjie/bin/llvm/lib` 目录都存在，则可设置：
+假设 `which cjc` 显示 `/work/cangjie/bin/cjc`, 并且 `/work/cangjie/third_party/llvm/bin` 和 `/work/cangjie/third_party/llvm/lib` 目录都存在，则可设置：
 
 ```shell
 export CANGJIE_HOME=/work/cangjie
@@ -473,9 +491,9 @@ export CANGJIE_HOME=/work/cangjie
 方法 2：在 `/root/.bashrc` 里面直接设置环境变量，如 `cjc` 放在 `/work/cangjie/bin/cjc` 目录下，则设置方法如下：
 
 ```shell
-export PATH=/work/cangjie/bin/llvm/bin:$PATH
-export LIBRARY_PATH=/work/cangjie/bin/llvm/lib:$LIBRARY_PATH
-export LD_LIBRARY_PATH=/work/cangjie/bin/llvm/lib:$LD_LIBRARY_PATH
+export PATH=/work/cangjie/third_party/llvm/bin:$PATH
+export LIBRARY_PATH=/work/cangjie/third_party/llvm/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=/work/cangjie/third_party/llvm/lib:$LD_LIBRARY_PATH
 ```
 
 方法 3：手动安装 `llvm-cov` 命令，如 `ubuntu` 上可执行命令：

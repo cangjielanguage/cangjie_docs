@@ -2,15 +2,16 @@
 
 The previous section discussed how to define custom exceptions. Now let's learn how to throw and handle exceptions.
 
-- Since exceptions are of `class` type, you only need to create them in the same way as class objects. For example, the expression `FatherException()` creates an exception of type `FatherException`.<!--Del-->
-- The Cangjie language supports creating exception chains (only for `Exception`, not including `Error`), such as the expression `let fatherException = FatherException("this is message", causeException)`, where `causeException` is another exception and serves as the cause that triggered `fatherException`. When printing the exception stack trace, it will recursively print the cause.<!--DelEnd-->
+- Since exceptions are of `class` type, you only need to create them in the same way as class objects. For example, the expression `FatherException()` creates an exception of type `FatherException`.
+- The Cangjie language supports creating exception chains (only for `Exception`, not including `Error`), such as the expression `let fatherException = FatherException("this is message", causeException)`, where `causeException` is another exception and serves as the cause that triggered `fatherException`. When printing the exception stack trace, it will recursively print the cause.
 - The Cangjie language provides the `throw` keyword for throwing exceptions. When using `throw`, the expression following it must be a subtype of `Exception` (note that `Error`, though also an exception type, cannot be manually thrown via `throw`). For example, `throw ArithmeticException("I am an Exception!")` will throw an arithmetic exception when executed.
 - Exceptions thrown via the `throw` keyword must be caught and handled. If an exception is not caught, the system will invoke the default exception handler.
 
   > **Note:**
   >
-  > Developers can call the following static functions of the Thread class to register a custom exception handler for uncaught Exception:
+  > Developers can call the following static functions of the Thread class to register a custom exception handler for uncaught Error and Exception:
   >
+  > - `public static func handleUncaughtErrorBy(erHandler: (Error) -> Unit): Unit`
   > - `public static func handleUncaughtExceptionBy(exHandler: (Thread, Exception) -> Unit): Unit`
 
 Exception handling is performed using `try` expressions, which come in two forms:
@@ -108,7 +109,7 @@ open class D <: C {}
 
 class E <: D {}
 
-main () {
+main() {
     let x = try {
         E()
     } catch (e: Exception) {
@@ -308,6 +309,7 @@ Example demonstrating "the caught exception type is the least common superclass 
 open class Father <: Exception {
     var father: Int32 = 0
 }
+
 class ChildOne <: Father {
     var childOne: Int32 = 1
 }

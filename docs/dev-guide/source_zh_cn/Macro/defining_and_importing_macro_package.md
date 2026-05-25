@@ -32,6 +32,7 @@ public macro M(input: Tokens): Tokens { // macro M 外部可见
 
   ```cangjie
   macro package A
+
   import std.ast.*
 
   public macro M1(input: Tokens): Tokens {
@@ -59,7 +60,7 @@ public macro M(input: Tokens): Tokens { // macro M 外部可见
   }
   ```
 
-  编译命令如下，这里选择使用 `--output-type` 选项将 B 包编译成动态库。
+  编译命令如下，这里选择使用 `--output-type` 选项将 B 包编译成动态库，关于 cjc 编译选项介绍可以参考 "附录 > cjc 编译选项"。
 
   ```shell
   cjc B.cj --output-type=dylib -o libB.so
@@ -72,6 +73,7 @@ public macro M(input: Tokens): Tokens { // macro M 外部可见
 
   ```cangjie
   macro package C
+
   public import A.* // correct: macro package is allowed to re-export in a macro package.
   public import B.* // correct: non-macro package is also allowed to re-export in a macro package.
   import std.ast.*
@@ -83,7 +85,7 @@ public macro M(input: Tokens): Tokens { // macro M 外部可见
 
   编译命令如下，注意这里需要显式链接 B 包动态库：
 
-  ```bash
+  ```shell
   cjc C.cj --compile-macro -L. -lB
   ```
 
@@ -108,7 +110,8 @@ public macro M(input: Tokens): Tokens { // macro M 外部可见
 
   `main.cj`中 `M2` 宏展开后的结果如下：
 
-  <!-- code_no_check -->
+  <!-- compile -->
+  <!-- cfg="-L. -lB" -->
 
   ```cangjie
   import C.*

@@ -71,15 +71,25 @@ extend Foo {
 
 只能在 `package a` 或者在 `package b` 中为 `Foo` 实现 `Bar`。
 
-<!-- compile.error -->
+<!-- compile.error -extend1 -->
+<!-- cfg="-p a --output-type=staticlib" -->
 
 ```cangjie
 // package a
 public class Foo {}
+```
 
+<!-- compile.error -extend1 -->
+<!-- cfg="-p b --output-type=staticlib" -->
+```cangjie
 // package b
 public interface Bar {}
+```
 
+<!-- compile.error -extend1 -->
+<!-- cfg="-p c liba.a libb.a --output-type=staticlib" -->
+
+```cangjie
 // package c
 import a.Foo
 import b.Bar
@@ -186,23 +196,26 @@ extend Foo { // OK
 
 ```cangjie
 open class A {}
+
 class B <: A {}
+
 class E<X> {}
 
 interface I1 {
     func f1(): Unit
 }
+
 interface I2 {
     func f2(): Unit
 }
 
-extend<X> E<X> <: I1 where X <: B {  // extension 1
+extend<X> E<X> <: I1 where X <: B { // extension 1
     public func f1(): Unit {
         f2() // OK
     }
 }
 
-extend<X> E<X> <: I2 where X <: A   { // extension 2
+extend<X> E<X> <: I2 where X <: A { // extension 2
     public func f2(): Unit {
         f1() // Error
     }
@@ -299,7 +312,7 @@ extend<T> Foo<T> <: I0 {}
 
 当在其他包中为 `Foo` 类型扩展时，扩展是否导出由实现接口和泛型约束的访问修饰符决定。实现接口至少存在一个导出的接口，且所有的泛型约束均可导出时，该扩展将被导出。
 
-<!-- code_no_check -->
+<!-- code_check_manual -->
 
 ```cangjie
 // package b
@@ -308,8 +321,11 @@ package b
 import a.Foo
 
 private interface I1 {}
+
 internal interface I2 {}
+
 protected interface I3 {}
+
 public interface I4 {}
 
 // The extension will not be exported because I1 is not visible outside the file.
@@ -395,29 +411,33 @@ main() {
 
 而对于接口扩展，需要同时导入被扩展的类型、扩展的接口和泛型约束（如果有）才能使用。因此在 `package c` 中，需要同时导入 `Foo` 和 `I` 才能使用对应扩展中的函数 `g`。
 
-<!-- run -access_rules4 -->
+<!-- run -access_rule4 -->
 <!-- cfg="-p a --output-type=staticlib" -->
 
 ```cangjie
 // package a
 package a
+
 public class Foo {}
+
 extend Foo {
     public func f() {}
 }
 ```
 
-<!-- run -access_rules4 -->
+<!-- run -access_rule4 -->
 <!-- cfg="-p b --output-type=staticlib liba.a" -->
 
 ```cangjie
 // package b
 package b
+
 import a.Foo
 
 public interface I {
     func g(): Unit
 }
+
 extend Foo <: I {
     public func g() {
         this.f() // OK
@@ -425,12 +445,13 @@ extend Foo <: I {
 }
 ```
 
-<!-- run -access_rules4 -->
+<!-- run -access_rule4 -->
 <!-- cfg="liba.a libb.a" -->
 
 ```cangjie
 // package c
 package c
+
 import a.Foo
 import b.I
 

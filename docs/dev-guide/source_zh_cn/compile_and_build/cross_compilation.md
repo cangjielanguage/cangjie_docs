@@ -134,10 +134,10 @@ $ adb shell "LD_LIBRARY_PATH=/data/local/tmp /data/local/tmp/main"
 
 ### 安装包下载
 
-支持交叉编译至 `iOS` 的仓颉安装包为：`cangjie-sdk-mac-aarch64-ios.x.y.z.tar.gz` 。
+支持交叉编译至 `iOS` 的仓颉安装包为：`cangjie-sdk-mac-aarch64-ios.x.y.z.tar.gz`
 仓颉运行时以及标准库默认支持运行于 `iOS 11` 及以上系统（对于例外场景，请见《仓颉编程语言库 API》手册）。
 
-除了支持交叉编译的仓颉软件包，还需要下载 Xcode。下载完成后，请在 Xcode 中安装 iOS 开发组件。具体步骤可参考 Xcode 手册中的 "Downloading and installing additional Xcode components" 章节。
+除了支持交叉编译的仓颉软件包，还需要下载 `Xcode`。下载完成后，请在 Xcode 中安装 iOS 开发组件。具体步骤可参考 Xcode 手册中的 "Downloading and installing additional Xcode components" 章节。
 
 ### 编译
 
@@ -157,7 +157,7 @@ $ adb shell "LD_LIBRARY_PATH=/data/local/tmp /data/local/tmp/main"
     - `--target=x86_64-apple-ios-simulator` 适用于 x86_64 目标架构
 - `--output-type=staticlib` 指定输出文件的类型为静态库
 
-编译产物需要添加至 Xcode 工程中，并通过 Xcode 构建 `iOS` 应用。
+编译产物需要添加至 `Xcode` 工程中，并通过 `Xcode` 构建 `iOS` 应用。
 
 编译 `main.cj` 生成 `libmain.a` 静态库，示例如下：
 
@@ -167,7 +167,7 @@ cjc main.cj --output-type=staticlib --target=aarch64-apple-ios17.5 -o libmain.a
 
 `main.cj` 是交叉编译的仓颉代码， `aarch64-apple-ios17.5` 为目标平台，`--output-type=staticlib` 指定输出文件的类型为静态库。
 
-除需要将仓颉代码的编译产物添加到 Xcode 工程外，使用 Xcode 构建还需要进行以下配置：
+除需要将仓颉代码的编译产物添加到 `Xcode` 工程外，使用 `Xcode` 构建还需要进行以下配置：
 
 1. 根据需要的运行目标（设备或模拟器）选择一个目录：
 
@@ -175,9 +175,9 @@ cjc main.cj --output-type=staticlib --target=aarch64-apple-ios17.5 -o libmain.a
 
     - 适用于模拟器：`$CANGJIE_HOME/lib/ios_simulator_aarch64_cjnative`
 
-    将对应目录下的所有 `.a` 文件添加至 Xcode 工程中。
+   将对应目录下的所有 `.a` 文件添加至 `Xcode` 工程中。
 
-2. 在 Xcode 项目中配置 `Build Settings > Other Linker Flags` 字段，设置为以下值：
+2. 在 `Xcode` 项目中配置 `Build Settings > Other Linker Flags` 字段，设置为以下值：
 
     - `$CANGJIE_HOME/lib/ios_aarch64_cjnative/section.o`
 
@@ -185,7 +185,7 @@ cjc main.cj --output-type=staticlib --target=aarch64-apple-ios17.5 -o libmain.a
 
     - `-lc++`
 
-    值得注意的是，必须按照以上列表顺序添加链接选项。`$CANGJIE_HOME` 需要替换为实际的仓颉按照目录。若运行目标是模拟器，请将 `ios_aarch64_cjnative` 替换为 `ios_simulator_aarch64_cjnative` 。此外，若使用 Xcode 15，还需在 `Build Settings > Other Linker Flags` 中额外添加 `-Wl,-ld_classic` 或 `-Wl,-no_compact_unwind` ，否则在某些场景下，Xcode 15 链接器可能会报错：`Assertion failed: (false && "compact unwind compressed function offset doesn't fit in 24 bits")` 。
+   值得注意的是，必须按照以上列表顺序添加链接选项。`$CANGJIE_HOME` 需要替换为实际的仓颉按照目录。若运行目标是模拟器，请将 `ios_aarch64_cjnative` 替换为 `ios_simulator_aarch64_cjnative` 。此外，若使用 Xcode 15，还需在 `Build Settings > Other Linker Flags` 中额外添加 `-Wl,-ld_classic` 或 `-Wl,-no_compact_unwind` ，否则在某些场景下，Xcode 15 链接器可能会报错：`Assertion failed: (false && "compact unwind compressed function offset doesn't fit in 24 bits")` 。
 
 3. 在 `Xcode` 项目中配置 `Build Settings > Dead Code Stripping` 字段，设置为 `No`。
 
