@@ -23,7 +23,7 @@ Target triple names are commonly used to specify the compilation platform or tar
 | x86_64-linux-gnu | x86_64-unknown-linux-gnu | x86_64 architecture Linux platform | - |
 | aarch64-linux-gnu | aarch64-unknown-linux-gnu, arm64-unknown-linux-gnu, arm64-linux-gnu | aarch64 architecture Linux platform | - |
 | x86_64-windows-gnu | x86_64-pc-windows-gnu, x86_64-unknown-windows-gnu, x86_64-pc-w64-mingw32, x86_64-w64-mingw32 | x86_64 architecture Windows platform | - |
-| aarch64-linux-android\<integer> | aarch64-unknown-linux-android\<integer>, arm64-unknown-linux-android\<integer>, arm64-linux-android\<integer> | aarch64 architecture Android platform | \<integer\> is a positive integer describing the Android API Level. Target triple names with different values are not equivalent. |
+| aarch64-linux-android\<integer> | aarch64-unknown-linux-android\<integer>, arm64-unknown-linux-android\<integer>, arm64-linux-android\<integer> | aarch64 architecture Android platform | \<integer> is a positive integer describing the Android API Level. Target triple names with different values are not equivalent. |
 | x86_64-linux-ohos | x86_64-unknown-linux-ohos | x86_64 architecture OpenHarmony/HarmonyOS platform | - |
 | aarch64-linux-ohos | aarch64-unknown-linux-ohos, arm64-unknown-linux-ohos, arm64-linux-ohos | aarch64 architecture OpenHarmony/HarmonyOS platform | - |
 | aarch64-apple-darwin | arm64-apple-darwin | arm64 architecture macOS platform | - |
@@ -175,7 +175,7 @@ In addition to adding the Cangjie compilation output to the `Xcode` project, the
 
     - For simulators: `$CANGJIE_HOME/lib/ios_simulator_aarch64_cjnative`
 
-    Add all `.a` files from the corresponding directory to the `Xcode` project.
+   Add all `.a` files from the corresponding directory to the `Xcode` project.
 
 2. Configure the `Build Settings > Other Linker Flags` field in the `Xcode` project with the following values:
 
@@ -185,7 +185,7 @@ In addition to adding the Cangjie compilation output to the `Xcode` project, the
 
     - `-lc++`
 
-    Note: The linking options must be added in the exact order listed above. Replace `$CANGJIE_HOME` with the actual Cangjie installation directory. For simulator targets, replace `ios_aarch64_cjnative` with `ios_simulator_aarch64_cjnative`.
+   Note: The linking options must be added in the exact order listed above. Replace `$CANGJIE_HOME` with the actual Cangjie installation directory. For simulator targets, replace `ios_aarch64_cjnative` with `ios_simulator_aarch64_cjnative`.For targets built with Xcode 15, the additional linker flags `-Wl,-ld_classic` or `-Wl,-no_compact_unwind` must be appended in `Build Settings > Other Linker Flags` to suppress linker  assertion `Assertion failed: (false && "compact unwind compressed function offset doesn't fit in 24 bits")`  encountered in certain use-cases.
 
 3. Set the `Build Settings > Dead Code Stripping` field in the `Xcode` project to `No`.
 

@@ -38,6 +38,18 @@ Options:
                      eg: cjfmt -f a.cj -o ./fmta.cj -l 1:25
 ```
 
+`cjfmt` 选项列表如下：
+
+|选项名|选项描述|
+|---|---|
+|`-h`|打印命令说明|
+|`-v`|打印版本信息|
+|`-f`|指定目标文件|
+|`-d`|指定目标目录|
+|`-o <value>`|指定产物文件或目录|
+|`-c <value>`|指定格式化配置文件|
+|`-l <region>`|指定格式化片段|
+
 ### 文件格式化
 
 `cjfmt -f`
@@ -314,14 +326,18 @@ func fn(a: Int64): Unit {
 
 以下是推荐的顶层元素的修饰符排列优先级：
 
-```text
+<!-- code_no_check -->
+
+```cangjie
 public
 open/abstract
 ```
 
 以下是推荐的实例成员函数或实例成员属性的修饰符排序优先级：
 
-```text
+<!-- code_no_check -->
+
+```cangjie
 public/protected/private
 open
 override
@@ -329,7 +345,9 @@ override
 
 以下是推荐的静态成员函数的修饰符排序优先级：
 
-```text
+<!-- code_no_check -->
+
+```cangjie
 public/protected/private
 static
 redef
@@ -337,7 +355,9 @@ redef
 
 以下是推荐的成员变量的修饰符排序优先级：
 
-```text
+<!-- code_no_check -->
+
+```cangjie
 public/protected/private
 static
 ```

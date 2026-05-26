@@ -6,7 +6,7 @@
 
 在仓颉语言中，异常类包括 `Error` 和 `Exception`：
 
-- `Error` 类描述仓颉语言运行时，系统内部错误和资源耗尽错误。应用程序不应该抛出这种类型错误，如果出现内部错误，只能通知给用户，尽量安全终止程序。
+- `Error` 类描述仓颉语言运行时，系统内部错误和资源耗尽错误。应用程序不应该抛出这种类型的错误，如果出现内部错误，只能通知给用户，尽量安全终止程序。
 - `Exception` 类描述的是程序运行时的逻辑错误或者 IO 错误导致的异常，例如数组越界或者试图打开一个不存在的文件等，这类异常需要在程序中捕获处理。
 
 开发者不可以通过继承仓颉语言内置的 Error 或其子类来自定义异常，但是可以继承内置的 Exception 或其子类来自定义异常，例如：
@@ -41,10 +41,10 @@ class ChildException <: FatherException {
 | 函数种类 | 函数及说明                                                                     |
 | :------- |:--------------------------------------------------------------------------|
 | 构造函数 | `init()` 默认构造函数。                                                          |
-| <!--DelRow--> 构造函数 | `init(causedBy: Exception)` 可以设置触发原因的构造函数（异常消息为空）。                                                          |
+| 构造函数 | `init(causedBy: Exception)` 可以设置触发原因的构造函数（异常消息为空）。                                                          |
 | 构造函数 | `init(message: String)`  可以设置异常消息的构造函数。                                   |
-| <!--DelRow--> 构造函数 | `init(message: String, causedBy: Exception)`  可以设置异常消息和触发原因的构造函数。                                   |
-| <!--DelRow--> 成员属性 | `mut prop causedBy: ?Exception`  异常的触发原因。          |
+| 构造函数 | `init(message: String, causedBy: Exception)`  可以设置异常消息和触发原因的构造函数。                                   |
+| 成员属性 | `mut prop causedBy: ?Exception`  异常的触发原因。          |
 | 成员属性 | `open prop message: String`  返回发生异常的详细信息。该消息在异常类构造函数中初始化，默认为空字符串。          |
 | 成员函数 | `open func toString(): String`  返回异常类型名以及异常的详细信息，其中，异常的详细信息会默认调用 message。 |
 | 成员函数 | `func getClassName(): String`  返回用户定义的类名，子类需要重写该方法以返回子类的名称。               |

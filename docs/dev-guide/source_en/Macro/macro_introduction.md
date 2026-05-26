@@ -4,11 +4,15 @@ Macros can be understood as a special type of function. While regular functions 
 
 The following example demonstrates printing both the value and the expression itself during debugging:
 
+<!-- code_no_check -->
+
 ```cangjie
 let x = 3
 let y = 2
-@dprint(x)        // Prints "x = 3"
-@dprint(x + y)    // Prints "x + y = 5"
+
+@dprint(x) // Prints "x = 3"
+
+@dprint(x + y) // Prints "x + y = 5"
 ```
 
 Clearly, `dprint` cannot be implemented as a regular function because functions only receive the value of the input expression, not the expression itself. However, `dprint` can be implemented as a macro to access the code fragment of the input expression. A basic implementation is shown below:
@@ -91,7 +95,9 @@ Now let's examine each part of the code:
 
 - Lines 5-7: `let result = quote(...)`
 
-  The [`quote` expression](./Tokens_types_and_quote_expressions.md#quote-expression-and-interpolation) is used to construct [`Tokens`](./Tokens_types_and_quote_expressions.md#tokens-type). It converts the code fragment within parentheses into `Tokens`. Inside `quote`, interpolation `$(...)` can be used to convert the enclosed expression into `Tokens` and insert it into the `Tokens` constructed by `quote`. In this code, `$(inputStr)` inserts the value of `inputStr` (including quotation marks), while `$(input)` inserts the input code fragment. Thus, if the input expression is `x + y`, the resulting `Tokens` would be:
+  The [`quote` expression](./Tokens_types_and_quote_expressions.md#quote-expressions-and-interpolation) is used to construct [`Tokens`](./Tokens_types_and_quote_expressions.md#tokens-type). It converts the code fragment within parentheses into `Tokens`. Inside `quote`, interpolation `$(...)` can be used to convert the enclosed expression into `Tokens` and insert it into the `Tokens` constructed by `quote`. In this code, `$(inputStr)` inserts the value of `inputStr` (including quotation marks), while `$(input)` inserts the input code fragment. Thus, if the input expression is `x + y`, the resulting `Tokens` would be:
+
+  <!-- code_no_check -->
 
   ```cangjie
   print("x + y" + " = ")

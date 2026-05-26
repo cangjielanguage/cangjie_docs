@@ -122,7 +122,7 @@ import std.fs.{copy, rename, remove}
 
 main() {
     copy("./tempFile.txt", to: "./tempFile2.txt", overwrite: false)
-    rename("./tempFile2.txt",  to: "./tempFile3.txt", overwrite: false)
+    rename("./tempFile2.txt", to: "./tempFile3.txt", overwrite: false)
     remove("./tempFile3.txt")
 }
 ```
@@ -145,15 +145,6 @@ main() {
 ### 文件流操作
 
 除了上述的常规文件操作之外，`File` 类型也被设计为一种数据流类型，因此 `File` 类型本身实现了 `IOStream` 接口。当创建了一个 `File` 的实例，可以把这个实例当成数据流来使用。
-
-File 类定义：
-
-<!-- code_no_check -->
-```cangjie
-public class File <: Resource & IOStream & Seekable {
-    ...
-}
-```
 
 `File` 提供了两种构造方式，一种是通过方便的静态函数 `create` 直接创建新文件的实例，另一种是通过构造函数传入完整的打开文件模式来构造新实例。
 

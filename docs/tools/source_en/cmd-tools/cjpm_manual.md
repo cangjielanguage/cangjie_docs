@@ -1,12 +1,12 @@
-# Project Management Tool
+# Package Management Tool
 
 ## Overview
 
-`cjpm (Cangjie Project Manager)` is the official project management tool for the Cangjie language, designed to manage and maintain the module system of Cangjie projects. It covers operations such as module initialization, dependency checking, and updates. It provides a unified compilation entry point, supporting incremental compilation, parallel compilation, and custom compilation commands.
+`cjpm (Cangjie Project Manager)` is the official package management tool for the Cangjie language, designed to manage and maintain the module system of Cangjie projects. It covers operations such as module initialization, dependency checking, and updates. It provides a unified compilation entry point, supporting incremental compilation, parallel compilation, and custom compilation commands.
 
 ## Usage Instructions
 
-Execute the `cjpm -h` command to view the usage instructions for the project management tool, as shown below.
+Execute the `cjpm -h` command to view the usage instructions for the package management tool, as shown below.
 
 ```text
 Cangjie Project Manager
@@ -74,6 +74,24 @@ Available options:
 > When using `cjpm` central repository features, external dependencies are required. Please refer to the `stdx.net.tls` library documentation and follow the instructions to install the necessary external dependencies.
 
 ## Command Descriptions
+
+`cjpm` command list:
+
+| Command | Description |
+|---|---|
+| [`init`](#init) | Initialize a Cangjie module or workspace |
+| [`check`](#check) | Check the dependencies required by the project |
+| [`update`](#update) | Update remote dependency information |
+| [`tree`](#tree) | Visualize package dependency relationships in Cangjie source code |
+| [`build`](#build) | Build the current Cangjie project |
+| [`run`](#run) | Run the executable artifact built from the current project |
+| [`test`](#test) | Compile and run unit test cases |
+| [`bench`](#bench) | Compile and run benchmark cases |
+| [`clean`](#clean) | Clean temporary artifacts from the build process |
+| [`bundle`](#bundle) | Package the current Cangjie project into a source distribution package |
+| [`publish`](#publish) | Upload the distribution package to the central repository |
+| [`install`](#install) | Install a Cangjie project |
+| [`uninstall`](#uninstall) | Uninstall a Cangjie project |
 
 ### init
 
@@ -693,7 +711,7 @@ Notes on `install`:
 - Git-related options (`--branch`, `--tag`, `--commit`) are ignored unless `--git` is specified. Priority: `--commit` > `--branch` > `--tag`.
 - Existing executables with the same name will be replaced.
 - Executables are installed to `root/bin`, where `root` is the specified or default installation path.
-- Dynamic library dependencies are installed to `root/libs`, organized by program name. Add the corresponding directory to `LD_LIBRARY_PATH` (Linux), `PATH` (Windows), or `DYLD_LIBRARY_PATH` (macOS) for usage.
+- Dynamic library dependencies are installed to `root/libs`, organized by program name. Add the corresponding directory to `LD_LIBRARY_PATH` (Linux), `PATH` (Windows), or `DYLD_FALLBACK_LIBRARY_PATH` (macOS) for usage.
 - The default installation path is added to `PATH` during `envsetup`.
 - Git project installation removes the compilation artifacts directory afterward.
 - If the project has only one executable artifact, `--name` renames it during installation. For multiple artifacts, `--name` installs only the specified artifact.
@@ -1357,7 +1375,7 @@ Multi-backend, multi-platform isolation options for configuring different settin
 
 > **Note:**
 >
-> For the list of `target` names supported by `cjc` and their corresponding system platforms, see [Cross-Compilation](../../../dev-guide/source_en/compile_and_build/cross_compilation.md#cross-compilation).
+> For the list of `target` names supported by `cjc` and their corresponding system platforms, see [Cross-Compilation](../../../dev-guide/source_en/compile_and_build/cross_compilation.md).
 
 Developers can add a series of configuration items for a specific `target` by configuring the `target.target-name` field. The `target` name can be obtained in the corresponding Cangjie environment via the command `cjc -v`, where the `Target` item in the command output represents the `target` name for that environment. The above example applies to the `Linux` system but is also applicable to other platforms, where the `target` name can similarly be obtained via `cjc -v`.
 

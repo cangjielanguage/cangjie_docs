@@ -27,6 +27,7 @@ root_path
 // macros/m.cj
 // In this file, we define the macro Inner, Outer.
 macro package define
+
 import std.ast.*
 
 public macro Inner(input: Tokens) {
@@ -36,7 +37,6 @@ public macro Inner(input: Tokens) {
 public macro Outer(input: Tokens) {
     return input
 }
-
 ```
 
 宏调用放在 _src_ 子目录下：
@@ -46,10 +46,13 @@ public macro Outer(input: Tokens) {
 ```cangjie
 // src/demo.cj
 import define.*
+
 @Outer
 class Demo {
-    @Inner var state = 1
-    @Inner var cnt = 42
+    @Inner
+    var state = 1
+    @Inner
+    var cnt = 42
 }
 
 main() {
@@ -88,7 +91,7 @@ cjc src/demo.cj -o demo.exe --import-path ./target --output-dir ./target
 
 > **说明：**
 >
-> 宏替换过程依赖仓颉 runtime ，宏替换过程中仓颉 runtime 的初始化配置采用宏提供的默认配置，配置参数支持使用仓颉 runtime 运维日志进行查询，其中 cjHeapSize 与 cjStackSize 支持用户修改，其余暂不支持。注意所有配置参数在 OpenHarmony 平台下均无效，OpenHarmony 平台下仓颉运行时使用默认值。<!--Del-->仓颉 runtime 初始化配置可参见[runtime 初始化可选配置](../Appendix/runtime_env.md#runtime-初始化可选配置)章节。<!--DelEnd-->
+> 宏替换过程依赖仓颉 runtime ，宏替换过程中仓颉 runtime 的初始化配置采用宏提供的默认配置，配置参数支持使用仓颉 runtime 运维日志进行查询，其中 cjHeapSize 与 cjStackSize 支持用户修改，其余暂不支持。注意所有配置参数在 OpenHarmony 平台下均无效，OpenHarmony 平台下仓颉运行时使用默认值。仓颉 runtime 初始化配置可参见[runtime 初始化可选配置](../Appendix/runtime_env.md#runtime-初始化可选配置)章节。
 
 ## 并行宏展开
 
@@ -103,6 +106,7 @@ cjc src/demo.cj -o demo.exe --import-path ./target --output-dir ./target
 
 ```cangjie
 macro package define
+
 import std.ast.*
 import std.collection.HashMap
 
@@ -168,9 +172,8 @@ import std.ast.*
 public macro testDef(input: Tokens): Tokens {
     for (i in 0..input.size) {
         if (input[i].kind == IDENTIFIER) {
-            diagReport(DiagReportLevel.ERROR, input[i..(i + 1)],
-                       "This expression is not allowed to contain identifier",
-                       "Here is the illegal identifier")
+            diagReport(DiagReportLevel.ERROR, input[i..(i + 1)], "This expression is not allowed to contain identifier",
+                "Here is the illegal identifier")
         }
     }
     return input
@@ -249,7 +252,6 @@ public macro Outer(input: Tokens): Tokens {
     let decl = (parseDecl(input) as ClassDecl).getOrThrow()
     decl.body.decls.add(funcDecl)
     return decl.toTokens()
-
 }
 
 public macro Inner(input: Tokens): Tokens {
@@ -270,8 +272,10 @@ import define.*
 
 @Outer
 class Demo {
-    @Inner var state = 1
-    @Inner var cnt = 42
+    @Inner
+    var state = 1
+    @Inner
+    var cnt = 42
 }
 
 main(): Int64 {
@@ -279,7 +283,6 @@ main(): Int64 {
     println("${d.getCnt()}")
     return 0
 }
-
 ```
 
 在编译使用宏的文件时，在选项中，增加 `--debug-macro`，即使用仓颉宏的 _debug_ 模式。
@@ -298,7 +301,7 @@ cjc --debug-macro demo.cj --import-path ./target
 
 在 _debug_ 模式下，会生成临时文件 _demo.cj.macrocall_，对应宏展开的部分如下：
 
-<!-- code_no_check -->
+<!-- compile -->
 
 ```cangjie
 // demo.cj.macrocall

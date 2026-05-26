@@ -1,11 +1,11 @@
 # 包的声明
 
-在仓颉编程语言中，包声明以关键字 `package` 开头，后接 root 包至当前包由 `.` 分隔路径上所有包的包名。包名必须是合法的普通标识符（不含原始标识符）。例如：
+在仓颉编程语言中，包声明以关键字 `package` 开头，后接一个可选的组织名和组织名分隔符 '::'，然后是 root 包至当前包由 `.` 分隔路径上所有包的包名。组织名和包名必须是合法的普通标识符（不含原始标识符）。例如：
 
 <!-- compile -->
 
 ```cangjie
-package pkg1      // root 包 pkg1
+package pkg1 // root 包 pkg1
 ```
 
 <!-- compile -->
@@ -14,13 +14,19 @@ package pkg1      // root 包 pkg1
 package pkg1.sub1 // root 包 pkg1 的子包 sub1
 ```
 
+<!-- compile -->
+
+```cangjie
+package org1::pkg1.sub1 // org1 组织名 的 root 包 pkg1 的子包 sub1
+```
+
 > **注意：**
 >
-> 当前 Windows 平台版本，包名暂不支持使用 Unicode 字符，包名必须是一个仅含 ASCII 字符的合法的普通标识符。
+> 当前 Windows 平台版本，组织名、包名暂不支持使用 Unicode 字符，必须是一个仅含 ASCII 字符的合法的普通标识符。
 
 包声明必须在源文件的非空非注释的首行，且同一个包中的不同源文件的包声明必须保持一致。
 
-<!-- compile.error -->
+<!-- compile -->
 <!-- cfg="-p test --output-type=staticlib" -->
 
 ```cangjie
@@ -28,7 +34,11 @@ package pkg1.sub1 // root 包 pkg1 的子包 sub1
 // Comments are accepted
 package test
 // declarations...
+```
 
+<!-- code_check_manual -->
+
+```cangjie
 // file 2
 let a = 1 // Error, package declaration must appear first in a file
 package test
@@ -58,16 +68,12 @@ src
 
 则 `a.cj`、`b.cj`、`c.cj`、`main.cj` 中的包声明可以为:
 
-<!-- compile -->
-
 ```cangjie
 // a.cj
 // in file a.cj, the declared package name must correspond to relative path directory_0/directory_1.
 
 package default.directory_0.directory_1
 ```
-
-<!-- compile -->
 
 ```cangjie
 // b.cj
@@ -76,16 +82,12 @@ package default.directory_0.directory_1
 package default.directory_0.directory_1
 ```
 
-<!-- compile -->
-
 ```cangjie
 // c.cj
 // in file c.cj, the declared package name must correspond to relative path directory_0.
 
 package default.directory_0
 ```
-
-<!-- compile -->
 
 ```cangjie
 // main.cj
@@ -100,12 +102,10 @@ main(): Int64 {
 
 以下是一些错误示例：
 
-<!-- compile -->
-<!-- cfg="-p a --output-type=staticlib" -->
-
 ```cangjie
 // a.cj
 package a
+
 public class B { // Error, 'B' is conflicted with sub-package 'a.B'
     public static func f() {}
 }

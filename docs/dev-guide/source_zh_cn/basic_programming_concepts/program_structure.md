@@ -15,10 +15,16 @@
 ```cangjie
 // example.cj
 let a = 2023
+
 func b() {}
+
 struct C {}
+
 class D {}
-enum E { F | G }
+
+enum E {
+    F | G
+}
 
 main() {
     println(a)
@@ -183,14 +189,15 @@ class Player {
 <!-- compile.error -->
 
 ```cangjie
-func calc(a: Int32){
+func calc(a: Int32) {
     println(a)
     return a * a
 }
+
 main() {
     let a: String
-    if(calc(32) == 0){
-      a = "1"
+    if (calc(32) == 0) {
+        a = "1"
     }
     a = "2" // Error, cannot assign to immutable value
 }
@@ -201,7 +208,7 @@ main() {
 <!-- compile.error -->
 
 ```cangjie
-func foo(a: () -> Unit){
+func foo(a: () -> Unit) {
     // 业务逻辑处理
 }
 
@@ -218,6 +225,7 @@ main() {}
 ```
 
 此外，对于 [try-catch](../error_handle/handle.md#普通-try-表达式) 场景，编译器会假设 try 块总是全部被执行，且总是抛异常，从而进行相关报错，见如下示例：
+
 <!-- compile.error -->
 
 ```cangjie
@@ -252,7 +260,7 @@ struct Planet {
     const Planet(let mass: Float64, let radius: Float64) {}
 
     const func gravity(m: Float64, r: Float64) {
-        G * mass * m / r**2
+        G * mass * m / r ** 2
     }
 }
 
@@ -375,6 +383,7 @@ main() {
 ```cangjie
 // test.cj
 let element = "仓颉"
+
 main() {
     println(element)
     let element = 9

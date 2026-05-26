@@ -2,6 +2,10 @@
 
 This chapter introduces the definition and usage of Cangjie macros, which can be categorized into [Non-Attribute Macros](./implementation_of_macros.md#non-attribute-macros) and [Attribute Macros](./implementation_of_macros.md#attribute-macros). Additionally, this chapter will cover the behavior when macros are nested.
 
+> **Note:**
+>
+> Using I/O operations such as file operations, network communication, etc. in macro definitions may lead to unexpected behavior. Please use with caution.
+
 ## Non-Attribute Macros
 
 Non-attribute macros only accept the code to be transformed and do not take other parameters (attributes). Their definition format is as follows:
@@ -48,7 +52,7 @@ class C {
 
 Special notes on the legality of `Tokens` within parentheses:
 
-- The input must consist of a sequence of valid `Token`s. Symbols like "#", "\`", "\\", etc., when used alone, are not valid Cangjie `Token`s and are not supported as input values.
+- The input must consist of a sequence of valid `Token`s. Symbols like "#", "\`", ", "\\", etc., when used alone, are not valid Cangjie `Token`s and are not supported as input values.
 
 - If the input contains unmatched parentheses, they must be escaped using the escape symbol "\\".
 
@@ -259,7 +263,7 @@ macro package define
 
 // Macro definition with attribute
 public macro Foo(attrTokens: Tokens, inputTokens: Tokens): Tokens {
-    return attrTokens + inputTokens  // Concatenate attrTokens and inputTokens.
+    return attrTokens + inputTokens // Concatenate attrTokens and inputTokens.
 }
 ```
 
@@ -303,7 +307,7 @@ Regarding attribute macros, the following points should be noted:
 
 - Special notes on the legality of attribute parameters inside square brackets:
 
-    - The input must consist of a sequence of valid `Token`s. Symbols like "#", "`", "\\", etc., when used alone, are not valid Cangjie`Token`s and are not supported as input values.
+    - The input must consist of a sequence of valid `Token`s. Symbols like "#", "\`", "\\", etc., when used alone, are not valid Cangjie`Token`s and are not supported as input values.
 
     - If the input contains unmatched square brackets, they must be escaped using the escape symbol "\\".
 
@@ -334,11 +338,9 @@ Regarding attribute macros, the following points should be noted:
 
 The Cangjie language does not support nested macro definitions but conditionally supports nested macro invocations within macro definitions and macro invocations.
 
-### Nested Macro Invocations in Macro DefinitionsHere is the professional translation of the provided Markdown content from Chinese to English, maintaining all structural and formatting elements
+### Macro Definitions with Nested Calls
 
 Below is an example of macro definitions containing nested macro calls.
-
-### Macro Definitions with Nested Calls
 
 The `getIdent` macro is defined in macro package `pkg1`:
 
@@ -350,7 +352,7 @@ macro package pkg1
 
 import std.ast.*
 
-public macro getIdent(attr:Tokens, input:Tokens):Tokens {
+public macro getIdent(attr: Tokens, input: Tokens): Tokens {
     return quote(
         let decl = (parseDecl(input) as VarDecl).getOrThrow()
         let name = decl.identifier.value
@@ -371,7 +373,7 @@ macro package pkg2
 import std.ast.*
 import pkg1.*
 
-public macro Prop(input:Tokens):Tokens {
+public macro Prop(input: Tokens): Tokens {
     let v = parseDecl(input)
     @getIdent[ident](input)
     return quote(
@@ -393,6 +395,7 @@ Macro usage in package `pkg3` calling the `Prop` macro:
 package pkg3
 
 import pkg2.*
+
 class A {
     @Prop
     private let a_: Int64 = 1
@@ -500,6 +503,7 @@ package pkg3
 
 import pkg1.*
 import pkg2.*
+
 @Foo
 struct Data {
     let a = 2
@@ -531,12 +535,14 @@ Nested macros can appear in both parenthesized and unparenthesized macro calls. 
 <!-- code_no_check -->
 
 ```cangjie
-var a = @foo(@foo1(2 * 3)+@foo2(1 + 3))  // foo1, foo2 have to be defined.
+var a = @foo(@foo1(2 * 3) + @foo2(1 + 3)) // foo1, foo2 have to be defined.
 
 @Foo1 // Foo2 expands first, then Foo1 expands.
 @Foo2[attr: struct] // Attribute macro can be used in nested macro.
-struct Data{
-    @Foo3 @Foo4[123] var a = @bar1(@bar2(2 + 3) + 3)  // bar2, bar1, Foo4, Foo3 expands in order.
+struct Data {
+    @Foo3
+    @Foo4[123]
+    var a = @bar1(@bar2(2 + 3) + 3) // bar2, bar1, Foo4, Foo3 expands in order.
     public func getA() {
         return @foo(a + 2)
     }
@@ -569,16 +575,16 @@ Macro calls:
 <!-- code_no_check -->
 
 ```cangjie
-@Outer var a = 0
-@Inner var b = 0 // Error: The macro call 'Inner' should be nested within an 'Outer' context.
+@Outer
+var a = 0
+
+@Inner
+var b = 0 // Error: The macro call 'Inner' should be nested within an 'Outer' context.
 ```
 
 Here, `Inner` uses `assertParentContext` to verify it's called within an `Outer` macro. Since this nesting doesn't exist in the example, the compiler reports an error.
 
-Inner macros can also communicate with outer macros via key/value pairs. During execution:
-
-1. Inner macros send messages via `setItem`
-2. Outer macros receive these messages via `getChildMessages` (a collection of key/value mappings)
+Inner macros can also communicate with outer macros by sending key/value pairs. When an inner macro executes, it sends information to the outer macro by calling the standard library function `setItem`; subsequently, when the outer macro executes, it calls the standard library function `getChildMessages` to receive the information sent by each inner macro (a set of key/value pair mappings). Below is a simple example.
 
 Example macro definitions:
 
@@ -608,7 +614,6 @@ public macro Outer(input: Tokens): Tokens {
     let decl = (parseDecl(input) as ClassDecl).getOrThrow()
     decl.body.decls.add(funcDecl)
     return decl.toTokens()
-
 }
 
 public macro Inner(input: Tokens): Tokens {
@@ -622,16 +627,18 @@ public macro Inner(input: Tokens): Tokens {
 
 Macro calls:
 
-<!-- run -macro11 -->
-<!-- cfg="--compile-macro" -->
+<!-- run -macro10 -->
+<!-- cfg="--debug-macro" -->
 
 ```cangjie
 import define.*
 
 @Outer
 class Demo {
-    @Inner var state = 1
-    @Inner var cnt = 42
+    @Inner
+    var state = 1
+    @Inner
+    var cnt = 42
 }
 
 main(): Int64 {
@@ -651,12 +658,4 @@ public func getCnt() {
 }
 ```
 
-Workflow:
-
-1. Inner macros send messages via `setItem`
-2. Outer macro receives messages via `getChildMessages` (multiple `Inner` calls possible)
-3. Values are retrieved via the message object's `getString` method
-
----
-
-The translation strictly maintains all Markdown formatting, code blocks, and structural elements while providing accurate technical terminology and natural English flow.
+The specific process is as follows: The inner macro `Inner` sends messages to the outer macro via `setItem`; the `Outer` macro receives an array of message objects sent by `Inner` through the `getChildMessages` function (`Outer` can invoke `Inner` multiple times); finally, the corresponding value is retrieved via the `getString` function of these message objects.
