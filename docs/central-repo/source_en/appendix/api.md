@@ -58,4 +58,5 @@ The response code specification for all `APIs` in this chapter is as follows:
 * **403**: User lacks permission.
 * **404**: File does not exist.
 * **409**: Uploaded artifact package conflicts with an existing one in the repository.
+* **429**: Rate limit exceeded.
 * **\>=500**: Server failure.
