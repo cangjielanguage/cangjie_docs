@@ -174,7 +174,7 @@ respectively to the type `Node` and its mirror, etc.
 
 ### Foreign Types
 
-The [mirror types](#mirror-types) and [interop classes](interop-classes) are
+The [mirror types](#mirror-types) and [interop classes](#interop-classes) are
 not perfectly native to the language in which they are defined. Extending the
 analogy, their status is more like temporary visitors and work visa holders
 respectively, so they are collectively called _foreign types_ throughout
@@ -189,7 +189,7 @@ The following Cangjie types are called _Java-compatible_:
   (`Int16` is included, but `UInt8` is not)
 * [Foreign types](#foreign-types)
 * Types of the form `Option<`_`T`_`>` where _`T`_ is a [foreign type](#foreign-types)
-  (see _[`null` Handling](null-handling)_ for reasoning)
+  (see _[`null` Handling](#null-handling)_ for reasoning)
 
 The special generic mirror type [`JArray<T>`](#java-lang-array-t) included
 in the [interop library](#interop-library-api-reference)
