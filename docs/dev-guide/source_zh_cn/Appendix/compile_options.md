@@ -559,12 +559,12 @@ cjc --scan-dependency pkgA.cjo
 - `--lto-keep-pkg-visibility` 可以被多次使用，效果累加
 - `<value>` 可以为空字符串`""`， 表示隐藏所有包的符号
 
-**注意：**
-
-- 仅在开启 `--lto` 时有效，否则将报错
-- 不能与 `--compile-as-exe` 同时使用，否则将报错
-- 仅在 Linux 平台中编译动态库（`--output-type=dylib`）， iOS 平台中编译静态库（`output-type=staticlib`）时有效，否则会告警
-- `Windows` 平台和 `macOS` （不含`iOS`）不支持该功能，`ios` 平台需使用 `--experimental` 启用该功能。
+> **注意：**
+>
+> - 仅在开启 `--lto` 时有效，否则将报错。
+> - 不能与 `--compile-as-exe` 同时使用，否则将报错。
+> - 仅在 Linux 、Android 、OpenHarmony 平台中编译动态库（`--output-type=dylib`）有效， iOS 平台中编译静态库（`output-type=staticlib`）时有效，否则会告警。
+> - `Windows` 平台和 `macOS` （不含`iOS`）不支持该功能，`ios` 平台需使用 `--experimental` 启用该功能。
 
 **使用示例：**
 
@@ -1931,7 +1931,7 @@ It is resumed, a = 9
 | 取值        | 输出格式                 | 行为说明                                                                      |
 | :-------- | :------------------- | :------------------------------------------------------------------------ |
 | `bitcode` | LLVM Bitcode (`.bc`) | 输出 LLVM IR bitcode |
-| `native`  | 原生静态库 (`.a`)         | 输出经过 LTO 优化的静态库，并可配合 `--static-std` 移除未使用的标准库代码，以减小体积                       |
+| `native`  | 原生静态库 (`.a`)         | 输出经过 LTO 优化的静态库，自动链接标准库 bc 文件参与 LTO                      |
 
 用法如下：
 
