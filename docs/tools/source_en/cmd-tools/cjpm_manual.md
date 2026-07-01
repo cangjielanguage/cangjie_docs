@@ -1229,7 +1229,8 @@ Module developers can provide all `cjo` files and the `root` package dynamic lib
 >
 > - When applying this configuration, compiling the `root` package dynamic library requires all subpackage static libraries, so ensure the `root` package is not directly or indirectly imported by its subpackages.
 > - Currently, the `profile.build.combined` configuration is experimental and unstable. Developers enabling this configuration should note the following limitations:
->     - If a module configured with this field directly or indirectly depends on other source modules, those dependent modules must also be configured with this field.
+>     - In non-workspace scenarios, if a module is configured with this field, all source modules it directly or indirectly depends on are automatically treated as configured with this field, and manual configuration for each one is not required; if the module is not configured with this field, `combined` does not take effect as a whole, and configuring this field for a dependency module does not take effect either;
+>     - In workspace scenarios, only when all workspace members currently participating in compilation are configured with this field will all source modules they directly or indirectly depend on be automatically treated as configured with this field; if any member is not configured, `combined` does not take effect as a whole;
 >     - Source modules depended on by build scripts will not take effect if configured with `profile.build.combined`.
 >     - The `profile.build.combined` option is not supported when the compilation target platform is `macOS`.
 
