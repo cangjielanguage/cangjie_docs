@@ -141,8 +141,9 @@ For example, when compiling the following Objective-C interop class:
 @ObjCImpl
 public class BooleanNode <: Node {
     private let _flag: Bool
+    @ForeignName["initWithX:AndFlag:"]
     public init(x: Int32, flag: Bool) {
-        super.init(x)
+        super(x)
         this._flag = flag
     }
     public func isFlagged(): Bool {
@@ -158,7 +159,7 @@ similar to the following:
 // BooleandNode.h
 @interface BooleanNode : Node
 /* glue code */
-- (id)init:(int32_t)x:(BOOL)flag;
+- (id)initWithX:(int32_t)x AndFlag:(BOOL)flag;
 - (BOOL)isFlagged;
 /* more glue code */
 @end
@@ -168,7 +169,7 @@ similar to the following:
 // BooleandNode.m
 @implementation BooleanNode : Node
 /* glue code */
-- (id)init:(int32_t)x:(BOOL)flag {
+- (id)initWithX:(int32_t)x AndFlag:(BOOL)flag {
     /* Bridge code constructing a Cangjie BooleanNode(x, flag) instance and
      * associating it with the Objective-C instance being constructed,
      * i.e. 'self'.
@@ -184,7 +185,7 @@ similar to the following:
 ```
 
 Now both Objective-C and Cangjie parts of the application code can instantiate
-the inetrop class `BooleanNode`, call its `public` instance member functions
+the interop class `BooleanNode`, call its `public` instance member functions
 `getX()` (inherited from the Objective-C class `Node`) and `isFlagged()`,
 convert its instances respectively to the type `Node` and its mirror, etc.
 
@@ -318,6 +319,7 @@ already a class `M` with a single parameterless `void` instance method
 #import <Foundation/Foundation.h>
 
 @interface M : NSObject
+- (instancetype)init;
 - (void)foo;
 @end
 ```
@@ -327,8 +329,14 @@ already a class `M` with a single parameterless `void` instance method
 #import "M.h"
 
 @implementation M
+- (instancetype)init {
+    if (self = [super init]) {
+        // Some initialization work
+    }
+    return self;
+}
 - (void) foo {
-    printf("Hello from ObjC M.foo()\n");
+    printf("Hello from Objective-C M.foo()\n");
 }
 @end
 ```
@@ -341,6 +349,7 @@ Your interop class design would then look like this:
 ```objectivec
 #import "M.h"
 @interface A : M
+- (instancetype)init;
 - (void)foo;
 @end
 ```
@@ -375,7 +384,7 @@ so the configuration file is pretty simple:
 ```toml
 # A.toml
 # Place the mirror of M and any dependencies it may have in the 'objcworld' package:
-[[package]]
+[[packages]]
 filters = { include = ["M", "NS.+"] }
 package-name = "objcworld"
 
@@ -435,8 +444,8 @@ Example error messsage:
 .../NSObjCRuntime.h:626:74: error: unknown type name 'NSUInteger'
 ```
 
-On some systems, you need to pass an additional argument to Clang,
-either "`-DTARGET_OS_IPHONE=1`" or "`-DTARGET_OS_OSX=1`".
+On some systems, you need to pass "`-DTARGET_OS_IPHONE=1`" as an additional
+argument to Clang.
 
 Add it to the `arguments-append` array of the `[sources-mixins]` table.
 In the above example, it is present but commented out:
@@ -607,23 +616,21 @@ To continue the above example, the interop class `A` would look
 like this:
 
 ```cangjie
-package cjworld           // Same package name
+package objcworld         // Same package name for simplicity
 
 import objc.lang.*        // Always required
 
 @ObjCImpl
 public class A <: M {
-
-    public init() {
-        super()
-    }
-
     override public open func foo(): Unit {
         println("Hello from overridden A.foo()")
     }
-
 }
 ```
+
+**NOTE:** The default constructor of `A` calls `super()`, which is equivalent
+to calling `[super init]` in Objective-C terms, albeit with the assumption that
+it will return an instance of a suitable class.
 
 
 #### Step 4: Compile the Interop Classes {#step-4}
@@ -646,7 +653,7 @@ where
 mirror type declarations.
 
 `<target-file>` is the desired name of the output `.dylib` file with
-compiled Cangjie code for the interop classes, such as `libcjworld.dylib`.
+compiled Cangjie code for the interop classes, such as `libobjcworld.dylib`.
 
 The compiler will also generate Objective-C source files (`.h` and `.m`)
 for the Objective-C wrappers or the interop classes, placing them in the
@@ -663,23 +670,23 @@ xcrun codesign --sign - <dylib-file>
 Compile the interop class:
 
 ```bash
-cd cjworld
+cd objcworld
 
 cjc --target=arm64-apple-ios-simulator \
     --sysroot=$(xcrun --show-sdk-path --sdk iphonesimulator) \
     --output-type=dylib \
     --int-overflow=wrapping \
     *.cj \
-    -o libcjworld.dylib \
+    -o libobjcworld.dylib \
     --link-options "-undefined dynamic_lookup"
 ```
-The compiler will produce three files: `./libcjworld.dylib`,
+The compiler will produce three files: `./libobjcworld.dylib`,
 `./objc-gen/A.h` and `./objc-gen/A.m`.
 
 Sign the generated dynamic library:
 
 ```bash
-xcrun codesign --sign - libcjworld.dylib
+xcrun codesign --sign - libobjcworld.dylib
 ```
 
 
@@ -750,15 +757,15 @@ mkdir -p CJRuntimeDylibs
 cp $CANGJIE_HOME/runtime/lib/ios_simulator_aarch64_cjnative/*.dylib CJRuntimeDylibs/
 ```
 
-Add those dynamic libraries _and_ `./cjworld/libcjworld.dylib` to your Xcode
+Add those dynamic libraries _and_ `./objcworld/libobjcworld.dylib` to your Xcode
 project as dependencies (BuildPhases - in both “Copy Files” and “Link Binary
 With Libraries” lists).
 
 Move the `.h` and `.m` files generated by `cjc` to project root:
 
 ```shell
-mv cjworld/objc-gen/*.h ./
-mv cjworld/objc-gen/*.m ./
+mv objcworld/objc-gen/*.h ./
+mv objcworld/objc-gen/*.m ./
 ```
 
 Rebuild the Xcode project.
@@ -916,8 +923,12 @@ exceptions:
 
     @ObjCMirror
     public open class B <: A {
+        @ForeignName["foo"]
         public open func fooInstance()
+
+        @ForeignName["bar"]
         public static func barStatic()
+
         public open func bar()
     }
     ```
@@ -1209,12 +1220,13 @@ names, if any, of the original getter and setter:
 ```cangjie
 public interface FormElement <: UIComponent {
     @ForeignGetterName["isEditable"]
-    @ForeignSetterName["setEditable:"]
     public mut prop editable: Bool
 //   .  .  .
 @end
-
 ```
+
+**NOTE:** Specifying `@ForeignSetterName["setEditable:"]` is unnecessary,
+as that is the standard name for that setter method.
 
 
 #### Classes
@@ -1226,6 +1238,7 @@ from the mirror class name.
 
 Objective-C `@interface` category and extension declarations are merged
 with the respective Cangjie class declarations.
+
 
 Objective-C `@implementation` declarations are ignored.
 
@@ -1245,8 +1258,9 @@ are mirrored into Cangjie constructors, with three limitations:
 
   ```objectivec
   @interface Point2D : NSObject {
-      double x;
-      double y;
+  @private
+      double _x;
+      double _y;
   }
   - (id)init;
   - (id)initWithX:(double)x;
@@ -1287,6 +1301,7 @@ are mirrored into Cangjie constructors, with three limitations:
   _are_ inherited, but may not be used as superconstructors, as they return
   completely initialized superclass instances.
 
+
 * Unlike a Cangjie/Java/etc. constructor that always initializes its receiver
   object, an Objective-C `init` method can return a substitute object and has
   an explicit return type. That type used to be `id`, so technically an `init`
@@ -1302,15 +1317,14 @@ are mirrored into Cangjie constructors, with three limitations:
   recommended way of signaling to the caller that the object could not be
   initialized for a reason that does not warrant raising an exception.
 
-  The current implementation expects `init` methods to return instances of the
-  respective class and does not validate the returned value.
+  The current implementation expects `init` methods to return instances
+  of suitable classes and does not validate the returned value.
   **WARNING: If an `init` method called from Cangjie returns `nil` or a pointer
   to an instance of a class that is not (a subclass of) the receiver class,
   the behavior is undefined.**
 
 **Instance variables** are mirrored into instance member variables of the
 respective mirror types. There are no class variables in Objective-C.
-
 
 
 #### Protocols
@@ -1959,7 +1973,7 @@ Each entry in the `[output-roots]` table of tables defines a symbolic name
 for the pathname of a directory in the local file system. The mirror generator
 will use that pathname as the common root of one or more package-specific
 output directories, set using the `output-root` property of the respective
-[`[[package]]` array](#packages) elements.
+[`[[packages]]` array](#packages) elements.
 
 **Example:**
 
@@ -1970,17 +1984,17 @@ path = "./lib/src"
 [output-roots.app]
 path = "./main/src"
 
-[[package]]
+[[packages]]
 package-name = "com.vendor1.lib1"
 output-root = "lib"  # Output to "./lib/src/com/vendor1/lib1"
 filters = ...
 
-[[package]]
+[[packages]]
 package-name = "com.vendor2.lib2"
 output-root = "lib"  # Output to "./lib/src/com/vendor2/lib2"
 filters = ...
 
-[[package]]
+[[packages]]
 package-name = "com.mycompany.app"
 output-root = "app"  # Output to "./main/src/com/mycompany/app"
 filters = ...
@@ -2060,7 +2074,7 @@ arguments-append = [
 
 #### Packages
 
-Each entry in the `[[package]]` array specifies a target Cangjie package
+Each entry in the `[[packages]]` array specifies a target Cangjie package
 name, a set of name filters that define which Objective-C entities will
 be mirrored to that package, and, optionally, the output directory
 specific for that package.
@@ -2096,7 +2110,7 @@ Otherwise, an error is shown.
 [output-roots.main]
 path="./cj-mirrors"
 
-[[package]]
+[[packages]]
 package-name = "objc.foundation"
 output-root = "main"
 ```
@@ -2114,7 +2128,7 @@ must be mirrored to the given Cangjie package. See
 
 ```toml
 # The Foundation framework
-[[package]]
+[[packages]]
 package-name = "objc.foundation"
 filters = { include = "NS.+" }
 ```
@@ -2258,7 +2272,7 @@ id = "NSObjectProtocol"
 
 `imports` is an array of strings each containing the pathname of another
 configuration file, the settings from which will be added to the current
-configuration. The entries of `package` and `mappings` arrays found
+configuration. The entries of `packages` and `mappings` arrays found
 in the imported file are appended to those present in the importing file.
 
 Nested imports are supported, circular import is detected and results
