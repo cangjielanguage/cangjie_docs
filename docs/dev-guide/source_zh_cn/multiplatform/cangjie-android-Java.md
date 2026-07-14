@@ -32,6 +32,8 @@ Android 工具链通过一种称为脱糖（desugaring）的字节码转换技�
 
 例如，在 Android 6 到 Android 8.1（API 级别 23-27）上，仓颉 Android SDK 不支持 Java 8+ 平台 API，如 Stream API 和 `java.util.Optional`。如果仓颉代码使用了这些 API，则必须在 Gradle 构建脚本中将 `minSdk` 设置为 `28` 或更高版本。
 
+有关各 Java 8+ 特性与 API 在目标 Android 版本上的可用性，请参阅 Android 开发者文档。
+
 ## 核心概念
 
 ### 镜像类型
@@ -394,7 +396,7 @@ B b = Interop.m(new A(), "Test", 0);
 // ...
 ```
 
-## 仓颉侧调用 Java
+### 仓颉侧调用 Java
 
 现在开发者已经设计了胶水层，实现并构建了互操作类，将各个必要的产物集成进了安卓工程，接下来可以继续往仓颉侧的互操作类中加入更多的代码逻辑。类型映射关系与 [在仓颉侧使用 Java](#在仓颉侧使用-java) 完全相同。
 
@@ -416,6 +418,10 @@ B b = Interop.m(new A(), "Test", 0);
 \* `T'` 必须要么是互操作类，要么是 Java 类型 `T` 的镜像类型。如果 `T'` 是互操作类，`T` 则是 Java 侧的一个包装类，且该包装类是由 cjc 在编译互操作类 `T'` 时自动生成的。
 
 † `T'` 必须要么是互操作类，要么是镜像类型，要么是上表中列举的值类型（例如 `Int32`）。
+
+**使用限制：**
+
+* 形参为可变参数（Java 类型 `T...`）的方法，在镜像中对应一个类型为 `?JArray<T'>` 的普通形参。仓颉代码调用此类方法或构造函数前，必须显式创建并初始化 `JArray<T'>` 实例以传入实参。
 
 正常构建安卓工程之后，按以下步骤实现仓颉侧对 Java 侧暴露的接口的调用：
 
@@ -538,7 +544,7 @@ public class Interop {
 
 将步骤三中新生成或更新了的 `.so` 文件和 `.java` 文件（如有必要）更新到安卓工程的对应位置，然后重新构建安卓工程，详情请参见 [集成编译产物至安卓工程](#第五步集成编译产物至安卓工程)。
 
-## 互操作类的特性与限制
+### 互操作类的特性与限制
 
 * 互操作类必须是 `@JavaMirror class` 的直接子类。互操作类当不显式指定继承哪个父类时，将默认继承互操作库中的 [`java.lang.JObject`](#javalangjobject)，而非 `std.core.Object`。
 
@@ -559,6 +565,57 @@ public class Interop {
 * 所有镜像类型和互操作类型所对应的 Java 类型，都必须由同一个类加载器所加载。
 
 * 与 Java 及其他 JVM 语言不同，仓颉禁止包之间存在循环导入依赖关系。该限制给镜像生成的流程带来了挑战，详情请参见 [处理循环导入依赖](#处理循环导入依赖) 章节。
+
+#### 自动字符串转换
+
+Java 的 `java.lang.String` 与仓颉的 `std.core.String` 在二进制层面不兼容，因此需要在两种字符串表示之间进行拷贝式转换，方能使一方语言的代码处理来自另一方的字符串数据。内置镜像类型 [`java.lang.JString`](#javalangjstring) 提供了接受仓颉 `String`、以其 UTF-8 字符数据构造等价 UTF-16 Java 字符串的特殊构造函数，以及执行反向转换并返回仓颉 `String` 的 `toString()` 成员函数：
+
+```java
+public class J {
+    public static String s2s(String s) { ... }
+}
+```
+
+<!-- compile -->
+```cangjie
+@JavaMirror
+public class J {
+    public static func s2s(s: ?JString): ?JString
+}
+
+   .  .  .
+
+    let s: String = J.s2s(JString("Cangjie string")).getOrThrow().toString()
+```
+
+若仓颉代码需要将 Java 字符串交给普通仓颉函数进一步处理，或将仓颉字符串传回 Java，代码中势必频繁出现 `JString(...)` 与 `.toString()` 调用。然而，在每次跨越语言边界时自动转换所有 Java 字符串，在某些场景下会带来可观的 CPU 与内存开销：若仓颉代码并不实际操作某 Java 字符串，而仅将其透传回 Java、极少访问或根本不用，则转换纯属浪费，在移动应用中尤应避免。
+
+因此，互操作类作者可以针对需要在 Java 侧暴露为 `String` 类型的特定构造函数形参、成员函数形参、返回类型及成员属性，选择性地启用自动转换：将这些实体在仓颉侧声明为 `String` 类型（而非 `JString`）即可。唯一限制是，此类成员函数不得重写其镜像 Java 父类中的方法（见下文说明）。生成的 Java 包装类在相应位置使用 `String` 类型，桥接代码在 Java 调用这些构造函数和方法时自动完成两种字符串之间的转换。
+
+若需要支持接收或返回 `null`，应使用 `?String` 而非 `String`。详情请参见 [Java `null` 值处理](#java-null-值处理)。
+
+> **注意：**
+>
+> 1. `String` 与 `JString` 是互不相关的类型，不存在子类型关系。因此，互操作类中重写镜像 Java 父类方法的成员函数，其形参与返回类型必须与父类方法一致（通常为 `?JString`），`override` 修饰符才能按预期工作：
+>
+>    <!-- compile -->
+>    ```cangjie
+>    @JavaMirror
+>    public class J {
+>        public func f(s: ?JString): Unit
+>    }
+>
+>    @JavaImpl
+>    public class CJ <: J {
+>        override public func f(s: ?String): Unit {}   // 错误
+>        public func f(s: ?String): Unit {}            // 重载，而非重写
+>        override public func f(s: ?JString): Unit {}  // 正确
+>    }
+>    ```
+>
+>    虽然也可以在镜像类型定义中手动将 `JString` 替换为 `String`，但不建议这样做：由于二者无子类型关系，若未在所有子类型中完全一致地替换，可能引发难以诊断的重写/重载歧义。
+>
+> 2. [`java.lang.JArray<T>`](#javalangjarrayt) 的类型变元不支持 `String`，因此 Java 字符串数组应映射为 `JArray<JString>`，更常见的是 `?JArray<?JString>`。
 
 ## 由 Java 到仓颉的映射关系
 
@@ -833,6 +890,19 @@ public open class Outer_Static {  // '$' is replaced with '_'
 
 * `@JavaMirror class` 可以实现 `@JavaMirror interface`，该实现关系反映的是原 Java 侧 `class/interface` 之间的实现关系。`@JavaMirror class` 禁止实现除 `std.core.Any` 以外的普通仓颉 `interface`（所有 `@JavaMirror class` 均隐式实现 `std.core.Any`），普通仓颉 `class` 也禁止实现 `@JavaMirror interface`。
 
+* 镜像类不得使用 `extend` 扩展，任何类型亦不得以镜像接口进行接口扩展。
+
+* 在 Java 中，所有接口都是 `java.lang.Object` 类的子类型。这是因为 Java 中只有类才能实现接口。仓颉则不同：所有接口都是内置 `Any` 接口的子类型，而 `Any` **并非** `std.core.Object` 的子类型。因此，镜像接口**不是** [`java.lang.JObject`](#javalangjobject) 的子类型，以下 Java 方法 `test()` 无法在仓颉中改写：
+
+  ```java
+  public interface I {}
+
+  public class C {
+      public static void accept(Object o) {}
+      static void test(I i) { accept(i); }     // 在 Java 中可行
+  }
+  ```
+
 #### Java 泛型
 
 Java 泛型在经 `javac` 编译得到 `.class` 的过程中将被擦除，故由 Java 镜像生成器自动生成的 `@JavaMirror` 类型总是非泛型的，且所有原泛型参数均被替换为其最左边界类型的相应镜像类型。
@@ -875,11 +945,67 @@ Java 泛型在经 `javac` 编译得到 `.class` 的过程中将被擦除，故�
 
 `@JavaMirror` 类 `E'` 中无任何显式定义的构造函数，且 `@JavaMirror` 类本身也不会隐式定义默认构造函数，从而杜绝了通过调用构造函数实例化 `E'` 的可能性。
 
+### Java 记录类
+
+Java 记录类（`record`）本质上是语法糖，镜像规则与等价的普通类相同（参见 [Java `class` 与 `interface` 类型](#java-class-与-interface-类型)）。
+
+记录类定义在语义上等价于一个满足以下条件的普通 Java 类：
+
+* 为 `final` 类，且非 `abstract`
+* 直接继承 `java.lang.Record`
+* 包含一个或多个组件字段：即 `private` 实例字段，各配有对应的访问器方法
+* 可包含 `static` 字段，但除组件字段外不得有其他实例字段
+* 包含与组件字段一一对应的标准（canonical）构造函数，也可包含其他构造函数
+* 重写 `java.lang.Object` 的 `equals()`、`hashCode()` 和 `toString()`，不重写其他 `Object` 方法
+
+> **注意：** 内置镜像 [`java.lang.JObject`](#javalangjobject) 中，`hashCode()` 和 `toString()` 已分别重命名为 `hashCode32()` 和 `toJString()`，记录类镜像中亦遵循此约定。
+
+**示例：**
+
+```java
+public record Node (int value, Node next) {}
+```
+
+<!-- compile -->
+```cangjie
+@JavaMirror["Node"]
+public class Node <: Record {
+    public init(value: Int32, next: ?Node)
+
+    public func toJString(): JString
+    public func hashCode32(): Int32
+    public func equals(o: ?JObject): Bool
+
+    public func value(): Int32
+    public func next(): ?Node
+}
+```
+
 ### Java `null` 值处理
 
-仓颉没有空引用的概念，因此对 Java `null` 类型没有直接对应物。假设一个 Java 方法的返回类型是引用类型 `T`，如果该方法被镜像为仓颉成员函数后，成员函数的返回类型直接就是 `T` 的镜像类型 `T'`，就将存在这个问题：当仓颉侧调用该成员函数，Java 侧的对应方法返回的是实例的引用时，仓颉侧的成员函数调用能够正常返回；但如果 Java 侧对应方法返回的是 `null` 值，则将直接导致段错误。反过来，这样同时也会使得仓颉侧无法传递 `null` 值回 Java 侧。
+仓颉没有空引用的概念，因此对 Java `null` 类型没有直接对应物。假设一个 Java 方法的返回类型是引用类型 `T`，如果该方法被镜像为仓颉成员函数后，成员函数的返回类型直接就是 `T` 的镜像类型 `T'`，就将存在这个问题：当仓颉侧调用该成员函数，Java 侧的对应方法返回的是实例的引用时，仓颉侧的成员函数调用能够正常返回；但如果 Java 侧对应方法返回的是 `null` 值，则将直接导致段错误。若仓颉代码访问装包为镜像类型的、实际含 `null` 的字段，亦会如此。反之，若 Java 调用[互操作类](#互操作类)方法并传入 `null` 形参，将抛出 Java `NullPointerException`；仓颉侧亦无法向设计为接受 `null` 的 Java 方法或构造函数传递 `null`。
 
 因此，如果 Java 侧的字段类型、数组元素类型、方法形参类型或返回类型等，是引用类型 `R`，该实体的镜像所声明的类型将是 `Option<R'>`，其中的 `R'` 是 `R` 的镜像类型。在仓颉侧，`None` 代表的是 `null` 值，而 `Some(r)` 代表非 `null` 的引用值，其中 `r` 是类型为 `R'` 的值。为了实现上述规格，假设存在镜像类型或互操作类 `T`， cjc 会将 `Option<T>` 识别为 Java 兼容类型，并据此对 `T` 值进行装包/拆包操作。
+
+示例如下，考虑以下 Java 接口：
+
+```java
+public interface I {
+    Object f(Object[] xs);
+}
+```
+
+形参 `xs` 本身可能为 `null`，数组 `xs` 的每个元素亦可能为 `null`，方法 `f` 的返回值同样可能为 `null`。因此，对该接口进行镜像时最稳妥的方式如下：
+
+<!-- compile -->
+```cangjie
+@JavaMirror
+public interface I {
+    func f(xs: ?JArray<?JObject>): ?JObject
+}
+```
+
+另一示例如下：
 
 ```java
 interface Concatenator {
@@ -897,7 +1023,7 @@ interface Concatenator {
 }
 ```
 
-同理，当开发者在互操作类中定义具有外部类型 `T` 的局部变量时，也应该使用 `Option<T>` 而不是直接 `T`，除非开发者能百分之百确定该局部变量不会被赋 `null` 值。
+同理，当开发者在互操作类中定义具有外部类型 `T` 的局部变量时，也应该使用 `Option<T>` 而不是直接 `T`，除非开发者能百分之百确定该局部变量不会被赋 `null` 值。`Option<T>` 装包同样完全适用于[互操作类](#互操作类)：互操作类暴露给 Java 的构造函数与成员函数的形参及返回类型，建议均使用 `Option<T>` 装包。
 
 <!-- compile -->
 ```cangjie
@@ -905,9 +1031,9 @@ interface Concatenator {
 let m: M = M() // 如果M()能够成功返回，开发者能够保证一定返回 M 实例而不是空引用
 ```
 
-`Option<T>` 封装保证了即便 Java 侧往仓颉侧传入空引用也不会导致程序崩溃。然而这种封装也带来了代价：引入了额外的性能与内存开销，同时导致 [型变丢失](#型变丢失)。
+`Option<T>` 封装保证了即便 Java 侧往仓颉侧传入空引用也不会导致程序崩溃。然而这种封装也带来了代价：引入了额外的性能与内存开销，同时导致 [型变丢失](#型变丢失)，并使 [可空类型的类型测试与转换](#可空类型的类型测试与转换) 更为繁琐。
 
-### 型变丢失
+#### 型变丢失
 
 为 Java 镜像类型和互操作类进行 [`Option<T>`装包](#java-null-值处理) 带来了一个显著的限制：向这样装包的类型在所有其他方面均完全遵循仓颉语义规则。具体而言，根据仓颉语义规则，`Option<T>` 对其类型变元 `T` 是不变的，换句话说，对于两个类型 `U` 和 `T`，除非 `U` 和 `T` 是相同的类型，否则即便 `U` 是 `T` 的子类型，`Option<U>` 也与 `Option<T>` 不存在任何子类型关系。这意味着，对于镜像类型中存在重写关系的方法，如果这两个方法的返回类型存在协变的关系，这个协变的关系无法在仓颉侧保留下来，子类中的重写方法的返回类型的镜像必须改为父类中方法的返回类型的镜像。
 
@@ -983,6 +1109,80 @@ public open interface D <: C {
 
  Java 的可空性注解，如 `@Nullable`、`@NotNull` 等，可以部分缓解上述问题，但当前版本尚不支持此处理。
 
+#### 可空类型的类型测试与转换
+
+> **重要：** 经 `Option<T>` 装包的可空外部类型值，在进行类型测试与转换之前，必须先做空值检测并拆包，原因如下：
+
+1. 仓颉泛型对其类型变元是不变的，因此 `e is Option<T>` 仅当 `e` 的类型恰好为 `Option<T>` 时才为 `true`，而非某个 `Option<U>`（其中 `U <: T`）。同理，无法直接对 `Option<T>` 装包的值进行上转型或下转型。
+
+   ```cangjie
+   open class Foo {}
+   class Bar <: Foo {}
+      .  .  .
+       let bar: Bar = Bar()
+       let foo: Foo = bar                         // 正确
+       let bar2: Bar = (foo as Bar).getOrThrow()  // 正确
+
+
+       let maybeBar: ?Bar = Some(Bar())
+       let maybeFoo: ?Foo = maybeBar              // 错误：类型不匹配
+       let maybeBar2: ?Bar = (maybeFoo as Option<Bar>).getOrThrow()
+                                                  // 抛出 NoneValueException
+   ```
+
+   > **提示：** 可分别使用 `Option` 的成员函数 `.map()` 和 `.flatMap()` 编写上转型与下转型的简写：
+   >
+   > ```cangjie
+   > // 上转型（子类型 → 父类型）：
+   > let maybeFoo: ?Foo = maybeBar.map{ bar => bar }
+   >
+   > // 下转型（父类型 → 子类型）：
+   > let maybeBar2 = maybeFoo.flatMap{ foo => foo as Bar }
+   > ```
+
+2. 在 Java 中，对任意引用类型 `T`，`null instanceof T` 均为 `false`；而在仓颉中，若 `e` 的值为 `Option<T>.None`，则 `e is Option<T>` 为 `true`。
+
+   > **提示：** 可在仓颉中按如下方式复现 Java `instanceof` 的语义：
+   >
+   > ```java
+   > // Java：
+   > void f(o: Object) {
+   >     if (o instanceof T) { ... }
+   > }
+   > ```
+   >
+   > ```cangjie
+   > // 仓颉：
+   > func f(o: ?JObject): Unit {
+   >     if (let Some(t) <- o && t is T) { ... }
+   > }
+   > ```
+
+### 外部类型的转换与类型测试
+
+仓颉运算符 `is` 和 `as`，以及 `match` 表达式中的类型模式 `v: T`，均支持所有[外部类型](#外部类型)（`if-let` 与 `while-let` 中的类型模式支持尚不完善）。不过，这些运算的语义与 Java 的 `instanceof` 及强制类型转换一致，一般情况下实际类型检测与转换在 JVM 中完成。
+
+> **重要：** 如 [Java `null` 值处理](#java-null-值处理) 所述，经 `Option<T>` 装包的镜像类型与互操作类值，在类型测试前必须先做空值检测并拆包，原因与上一小节相同：
+
+1. `v is ?T` 仅当 `v` 的类型恰好为 `Option<T>` 时为 `true`，而非 `Option<U>`（`U <: T`）。
+2. 在 Java 中 `null instanceof T` 为 `false`；在仓颉中，若 `v` 等于 `Option<T>.None`，则 `v is ?T` 为 `true`。
+
+> 复现 Java `instanceof` 语义的方式如下：
+>
+> ```java
+> // Java：
+> void f(o: Object) {
+>     if (o instanceof T) { ... }
+> }
+> ```
+>
+> ```cangjie
+> // 仓颉：
+> func f(x: ?JObject): Unit {
+>     if (let Some(t) <- x && t is T) { ... }
+> }
+> ```
+
 ### 处理循环导入依赖
 
  Java 源码中普遍存在包间的循环导入，例如，Java 最基础的类，`java.lang` 包中的 `String` 类依赖：
@@ -1001,7 +1201,7 @@ public open interface D <: C {
 
 举例来说，假设开发者运行镜像生成器，指定以下系统属性：
 
-`    -Dpackage.name=java.world`
+`-Dpackage.name=java.world`
 
 镜像生成器将把生成的仓颉类型放在 `java.world` 包中，而原 Java 包名则通过 `@JavaMirror` 注解的参数得以传递至仓颉侧：
 
@@ -1046,6 +1246,216 @@ public interface javax_naming_directory_Attribute <: Cloneable & Serializable {
 }
 ```
 
+#### 增量镜像
+
+将所有 Java 镜像类型放入单一仓颉包（如 `java.world`）不仅会引发 [Java 镜像类型名称冲突](#java-镜像类型名称冲突)，还会增加编译开销，使用上也不便。将声明拆分到多个包中因此十分可取。并非所有 Java 包都处于同一导入依赖环中，故至少可以进行一定程度的拆分。
+
+在任何 Android 应用中，以下三类包之间通常不存在循环导入依赖：
+
+* 应用自身的包
+* Android API 包
+* JDK API 包
+
+因此，即便在最坏情况下，也可将镜像类型分别归入三个仓颉包，可分别命名为 `app`、`android` 和 `java`。
+
+此外，自 Java 9 起 JDK API 已模块化，Java 模块之间不允许循环导入依赖。镜像时完全可以复现 JDK 模块结构，例如将 `java.base` 模块导出包（`java.lang` 及其子包、`java.io`、`java.math` 等）的镜像放入仓颉包 `java.base`。
+
+第三方库通常也不应与应用组件及 API 形成循环导入。若应用中包含需在仓颉代码中使用的此类库，可将每个库分别镜像到独立的仓颉包。
+
+**增量镜像**流程支持上述拆分。对每个目标仓颉包各运行一次镜像生成器（通过 `package.name` 系统属性指定包名，用法同 [单包模式](#单包模式)），每次额外指定：
+
+1. 要镜像到该仓颉包的 Java 包**完整列表**（这些 Java 包之间可有循环依赖，也可导入**此前已镜像**的包/类型）。
+2. 所有**此前已镜像** Java 类型的完全限定名映射累积列表（初次为空）。
+
+生成器为列表 (1) 中各包的 public 类与接口及其尚未在列表 (2) 中的依赖生成镜像，并将新建立的 Java → 仓颉 名称映射追加到列表 (2)。
+
+##### 增量镜像命令行语法
+
+增量镜像目前仅支持[单 JAR 包模式](#java-镜像生成器命令行语法)：命令行须设置 `jar.mode=true`，并传入 jar 文件路径（而非类型的完全限定名）：
+
+```shell
+java -Djar.mode=true \
+    [system-properties] \
+    -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
+    [options] \
+    jar-file
+```
+
+`system-properties` 须包含：
+
+* `-Dpackage.mode=true`
+
+* `-Dpackage.name=target-package-name`
+
+  `target-package-name` 为目标仓颉包名，本次生成的**所有**镜像类型均放入该包。
+
+  > **重要：** 增量模式下，每次运行镜像生成器都必须指定一个**全新的、此前未使用过的**目标仓颉包名。若首次以 `-Dpackage.name=my.java.libs` 镜像一批类型，再次运行时不更改 `package.name`，将完全破坏镜像结果的一致性。
+  >
+  > 从某种意义上说，目标仓颉包是镜像的最小单元，正如仓颉源码包是 cjc 编译的最小单元：同一包中的源文件不能分开编译。
+
+* `-Djar.mode.packages=pathname`
+
+  `pathname` 为纯文本文件路径，每行一个 Java 完全限定包名，可选后缀 `.*`：
+
+  ```text
+  com.example.model
+  com.example.ui.*
+  ```
+
+  > **注意：** 通配符 `.*` 表示匹配该包**及其所有子包**，语义与 Java/仓颉 import 语句中的通配符不同。
+
+  生成器为所列包中所有非匿名、非 `private` 类型及其依赖（映射文件中已有的除外）生成镜像，均放入 `package.name` 指定的仓颉包。此选项仅用于单 JAR 包模式。
+
+* `-Dimports.config=import-mappings-file`
+
+  `import-mappings-file` 为**导入映射文件**路径，累积记录已生成镜像类型的 Java → 仓颉 完全限定名映射。启动时读取；其中已有映射的类型不再重复镜像。成功完成后，将本次新映射追加并写回（默认为 `./imports_config.txt`）。
+
+  > **注意：** 若 `import-mappings-file` 设为 `./imports_config.txt`，该文件会被覆盖。调试时如需保留中间映射，请在每次增量运行后备份。
+
+#### 使用增量镜像
+
+[增量镜像](#增量镜像) 可将应用中需在仓颉侧使用的任意组件拆分到不同仓颉包，前提是该组件与 Java 代码其余部分之间无循环导入依赖。每个需在仓颉 中使用的第三方 Java 库的 public 类型，均可镜像到独立命名的仓颉包。
+
+做法如下：先将应用包划分为彼此无循环导入依赖的子集，再按增量流程操作：
+
+1. 选取不依赖其他子集的任一子集，一次性镜像到合适命名的包。
+2. 镜像仅依赖已镜像子集的子集。
+3. 重复上一步，直至所有需在仓颉中使用的 Java 类型均已镜像，**每次使用新的目标仓颉包名**。
+
+对于 JDK API 的模块化镜像，可查阅 JDK 模块列表及其依赖图，收集各模块导出包列表，按增量镜像命令行模板逐模块运行生成器。`java.base` 模块的许多实现依赖内部 JDK 包，但镜像类型仅为声明、不暴露私有成员，生成器不会处理那些内部包中的类文件。
+
+### 闭包深度限制
+
+除 [处理循环导入依赖](#处理循环导入依赖) 所述的包间循环依赖外，标准 Java API 及众多流行库还具有依赖闭包庞大的特点。例如，若调用镜像生成器为空枚举类型生成镜像：
+
+```java
+public enum E {}
+```
+
+则生成器还会连带生成 `java.lang.Enum` 及其在标准 Java 库中的全部依赖，合计约 300 个镜像类型：
+
+```text
+AbstractInterruptibleChannel.cj
+AbstractStringBuilder.cj
+AccessControlContext.cj
+AccessMode.cj
+AccessibleObject.cj
+   .  .  .
+ZoneOffsetTransitionRule.cj
+ZoneRules.cj
+ZonedDateTime.cj
+```
+
+cjc 会为所有这些镜像类型生成胶水代码，而实际程序大多用不到——在 Android 等移动平台上尤其不可接受。
+
+要求开发者精确列出需镜像的类型与成员不现实。好在在计算依赖闭包时**限制搜索深度**即可显著减少生成量（往往一个数量级以上）。例如，将上述空枚举 `E` 的镜像深度限制为 2 时，除 `E` 自身外仅再生成六个镜像类型：枚举基类 `java.lang.Enum`、其实现的三个接口，以及两个方法的返回类型：
+
+```text
+Class.cj
+Comparable.cj
+Constable.cj
+E.cj
+Enum.cj
+Optional.cj
+Serializable.cj
+```
+
+深度限制规则如下：
+
+* 镜像**类型**集合始终包含：
+    - 映射为仓颉值类型的 Java 基本类型；
+    - 命令行显式指定的 [类与接口](#java-class-与-interface-类型)；
+    - 分别预镜像为 `JObject` 和 `JString` 的 `java.lang.Object` 与 `java.lang.String`（见[互操作库预置 API 参考](#互操作库预置-api-参考)）；
+    - 元素类型属于上述类型的 [数组类型](#java-数组类型)，镜像为 `JArray<T>`。
+
+* 对集合中类型的**成员**按以下规则过滤：
+    - 继承成员不作为“自有”成员镜像，即便其父类型不在集合中；
+    - 字段类型不在集合中的字段省略；
+    - 签名中含不在集合中的类型的方法省略；
+    - 成员类型与顶层类型同等对待：除非命令行显式指定，否则仅在有限深度闭包计算中被纳入集合时才镜像。
+
+* [命令行](#java-镜像生成器命令行语法) 系统属性 `-Dgen.closure.depth` 设置显式指定类/接口类型的深度上限。详见 [系统属性](#系统属性)。
+
+* 某类型 `T` 的深度上限为 **0** 时，**不**将 `T` 所依赖的任何类型加入集合，**包括其超类型**。此时仅镜像 `T` 自身在 `T` 中声明的非 `private` 成员（签名中的类型须已在集合中，如 `JString` 会自动纳入）。
+
+  **示例：**
+
+  ```java
+  // A.java
+  public class A {
+      public void f(String s) {}
+  }
+
+  // B.java
+  public class B extends A {
+      public void g(String s) {}
+  }
+  ```
+
+  若指示镜像生成器以深度 **0** 镜像类 `B`，则仅生成 `B` 及其方法 `g(String)` 的镜像（因 `JString` 会自动纳入镜像类型集合）。同时，`B` 从 `A` 继承的方法 `f(String)` **不可**用：
+
+  ```cangjie
+  // B.cj
+     .  .  .
+  @JavaMirror["B"]
+  public open class B {
+      public init()
+
+      public open func g(s: ?JString): Unit
+  }
+  ```
+
+* 深度上限为**正整数** `N` 时，除上述外还将以深度 `N-1` 纳入：`T` 的全部（递归）超类型；`T` 自身声明的非 `private` 字段类型；`T` 的非 `private` 构造函数的形参类型；`T` 自身声明的非 `private` 方法的形参与返回类型（**不**扫描继承方法）。若某类型已在集合中但深度更低，则提升至 `N-1`。对新纳入类型递归重复此过程。
+
+  **示例：**
+
+  ```java
+  // A.java
+  public class A {
+      public void f(C c) {}
+  }
+
+  // B.java
+  public class B extends A {
+      public void g(D d) { }
+  }
+
+  // C.java
+  public class C { }
+
+  // D.java
+  public class D extends C {}
+  ```
+
+  若指示镜像生成器以深度 **1** 镜像类 `B`，则生成 `B`、其超类 `A`，以及 `B.g(D)` 唯一形参的类型 `D` 的镜像。但 `A` 与 `D` 的镜像深度为 0，故类 `C` 及方法 `A.f(C)` **不会**被镜像：
+
+  ```cangjie
+  // A.cj
+     .  .  .
+  @JavaMirror["A"]
+  public open class A {
+      public init()
+  }
+
+  // B.cj
+     .  .  .
+  @JavaMirror["B"]
+  public open class B <: A {
+      public init()
+
+      public open func g(d: ?D): Unit
+  }
+
+  // D.cj
+     .  .  .
+  @JavaMirror["D"]
+  public open class D {
+      public init()
+  }
+  ```
+
+  最终将深度上限设为 **2** 时，镜像生成器输出中还将包含类 `C` 及方法 `A.f(C)` 的镜像。
+
 ## Java 镜像生成器参考
 
  Java 镜像生成器依赖 JDK17，在使用前请确保开发者本地已安装 JDK17 并配置好相应的 `PATH` 环境变量。
@@ -1086,9 +1496,9 @@ java -Djar.mode=true [system-properties]               \
 
 ### Java 镜像生成器命令行参数
 
-* `-a` `pathname`, `--android-jar` `pathname`   (必选)
+* `--boot-class-path` `pathname`   (必选)
 
-    `pathname`_ 必须是用于构建安卓项目的安卓 SDK 的 `android.jar` 文件的路径。该选项必须指定，且 `android.jar` 文件路径必须有效，否则将导致镜像生成器失败并输出错误信息。
+    `pathname` 必须是用于构建安卓应用 Java 部分的安卓 SDK 中 `android.jar` 文件的路径。该选项必须指定，且必须指向一个存在的文件。
 
 * `-d ``directory`
 
@@ -1096,7 +1506,7 @@ java -Djar.mode=true [system-properties]               \
 
 * `-cp ``path`, `--class-path` `path`    (必选)
 
-    `path` 是一系列的目录路径、jar 文件路径或 zip 文件路径，不同路径之间使用冒号 `:`（非 Windows）或分号 `;`（Windows）分隔。镜像生成器在为指定的类型 `type-names` 及其依赖类型生成镜像时，将会在这些路径下尝试搜索这些类型。
+    `path` 是一系列的目录路径、jar 文件路径或 zip 文件路径，不同路径之间使用冒号 `:`（非 Windows）或分号 `;`（Windows）分隔。镜像生成器在为指定的类型 `type-names` 及其依赖类型生成镜像时，将会在这些路径下尝试搜索这些类型。`path` 必须以 `android.jar` 文件的路径开头。
 
 * `-h`, `-?`, `--help`
 
@@ -1114,7 +1524,19 @@ java -Djar.mode=true [system-properties]               \
 
 * `-Dgen.closure.depth=number`
 
-   `number` 为非负十进制整数值，限制了镜像生成类型在确定需要为哪些类型及其成员生成镜像时，其搜索依赖的深度。
+    `number` 为非负十进制整数值，限制在确定需镜像的类型及其成员时，依赖图扫描的深度。详情请参见 [闭包深度限制](#闭包深度限制)。
+
+* `-Djar.mode=true`
+
+    启用单 JAR 包模式（参见上文 [命令行语法](#java-镜像生成器命令行语法)）。
+
+* `-Djar.mode.packages=pathname`
+
+    `pathname` 为包含 Java 包名列表的纯文本文件路径。仅镜像所列包及其依赖中的类型。须配合单 JAR 包模式使用。详情请参见 [增量镜像命令行语法](#增量镜像命令行语法)。
+
+* `-Dimports.config=pathname`
+
+    `pathname` 为导入映射文件路径，累积历次镜像生成的类型映射。须配合单 JAR 包模式及 `-Djar.mode.packages` 使用。详情请参见 [增量镜像命令行语法](#增量镜像命令行语法)。
 
 ### Java 镜像生成器使用示例
 
@@ -1278,3 +1700,93 @@ public operator func [](index: Int32, value!: T): Unit
 数组元素访问 `[]` 操作符重载函数。
 
 `JArray<T>` 从 [`JObject`](#javalangjobject) 继承得到以下成员函数：`equals`、`hashCode`、`hashCode32`、`toString`、`toJString`、`wait/notify` 等。
+
+## 运行时行为
+
+### Java 类加载器
+
+所有镜像类型与互操作类对应的 Java 类型，必须由**同一个**类加载器加载。
+
+### 初始化
+
+当控制流首次进入仓颉代码时，所有全局及 `static` 仓颉变量完成初始化，所有仓颉类型的静态初始化器被调用。这发生在第一个[互操作类](#互操作类)包装类被初始化时。
+
+> Java 类与接口在首次使用时初始化，触发条件包括：实例化、调用 `static` 方法、对 `static` 字段赋值、读取非常量 `static` 字段、子类初始化、实现类的初始化（仅当接口声明了 `default` 方法时），或某些反射调用。
+
+> **重要：** 上述仓颉初始化代码**不得**以任何方式使用镜像类型或互操作类，否则将导致死锁或崩溃。
+
+### 终结
+
+#### Java 终结器
+
+互操作类不得实现 `java.lang.Object` 的 `finalize()` 方法。内置镜像 [`java.lang.JObject`](#javalangjobject) 甚至未声明该方法。在互操作类中定义 `finalize()` 将与互操作支撑代码产生名称冲突并导致编译错误。
+
+> 若在互操作类中尝试定义 Java 终结器：
+>
+> ```cangjie
+> @JavaImpl
+> public class C {
+>        .  .  .
+>     public func finalize(): Unit {
+>            .  .  .
+>     }
+>
+> }
+> ```
+>
+> 将因互操作支撑代码自身使用 Java 终结器而产生名称冲突，导致编译错误。
+
+#### 仓颉终结器
+
+镜像类声明中不得包含仓颉终结器（`~init()`）。[互操作类](#互操作类)是否可包含终结器**尚待确定**。
+
+### 异常
+
+Java 与仓颉均支持异常。在 CJMP 双向互操作场景中，调用链可能在两种语言的方法/函数间多次传递，栈上 Java 与仓颉帧可能交错；异常抛出时，栈展开过程可能跨越语言边界。
+
+若从仓颉代码调用 Java 构造方法或方法时因未捕获的 Java 异常而异常完成，将立即抛出具有以下特征的仓颉异常：
+
+* 若 Java 异常为 `Error`（`java.lang.Error` 或其子类），仓颉异常亦为 `Error`；否则为 `Exception`。
+* `message` 属性的值**包含** Java 异常 `getMessage()` 返回的字符串。
+* `getStackTrace()` 返回的数组元素**尚待确定**。
+
+若该仓颉异常在抵达 Java 帧之前未被捕获，则重新抛出原始 Java 异常，过程重复。（若线程由仓颉 `spawn` 创建，栈上可能无 Java 帧，此时行为**尚待确定**。）
+
+若异常在仓颉代码内部抛出（非上述跨语言调用所致），且栈展开抵达 Java 帧，则抛出具有以下特征的 Java 异常（`java.lang.Exception`）：
+
+* `getMessage()` 返回的字符串包含仓颉异常的 `message` 属性值。
+* `getStackTrace()` 返回的数组元素**尚待确定**。
+
+该 Java 异常除消息外不保留原仓颉异常信息，此后按普通 Java 异常处理（参见上文）。
+
+无法在仓颉代码中 `throw` Java 异常，亦无法在 Java 代码中 `throw` 仓颉异常。
+
+### 内存管理
+
+Java 与仓颉对象分别驻留于各自堆中，由各自运行时管理。互操作库与桥接代码确保：只要另一语言的可访问变量或数据结构中仍持有引用，一侧堆中的对象就不会被垃圾回收。
+
+> **重要：** 跨语言引用一致性机制有两项重大限制，使用互操作功能时须始终牢记：
+
+1. Android VM 对同时存在于 VM **外部**（尤其是仓颉变量与数据结构中）的 Java 堆对象引用数设有硬性上限。应尽量避免在仓颉全局变量及长生命周期数据结构中保存此类引用（**包括**镜像类型与互操作类的实例）。这些引用在仓颉侧不再需要后的释放时机完全取决于仓颉垃圾回收器；即便从开发者角度看引用已短暂失效，也未必立即释放。在循环中遍历大型 Java 数组或集合可能在 Cangjie GC 运行前创建大量此类引用，使应用触及 Android VM 上限并异常终止。
+
+2. Java 与仓颉垃圾回收器各自仅在其托管环境内运行，跨语言循环引用可能导致内存泄漏。应避免创建此类引用，或在对象从 Java 与仓颉代码两侧均不可达之前主动打破循环。
+
+### 线程
+
+由仓颉 `spawn` 创建的线程在首次跨越语言边界时（实例化镜像/互操作类、调用未在仓颉中（重）定义的 `static` 方法等）自动以守护线程身份附着到 JVM。
+
+**重要：** 当前版本中，在**非** Java VM 创建的线程中进行互操作，须用 `exclusiveScope<T>` 包裹相关代码。例如，下列代码
+
+```cangjie
+let x = SomeJavaClass()
+return x.foo().bar() + 1  // 设 bar() 返回 Int32
+```
+
+须改写为：
+
+```cangjie
+return exclusiveScope<Int32> {
+    let x = SomeJavaClass()
+    return x.foo().bar() + 1  // 设 bar() 返回 Int32
+}
+```
