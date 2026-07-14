@@ -156,7 +156,7 @@ the `cjc` compiler will also yield a pair of Objective-C source code files
 similar to the following:
 
 ```objectivec
-// BooleandNode.h
+// BooleanNode.h
 @interface BooleanNode : Node
 /* glue code */
 - (id)initWithX:(int32_t)x AndFlag:(BOOL)flag;
@@ -166,7 +166,7 @@ similar to the following:
 ```
 
 ```objectivec
-// BooleandNode.m
+// BooleanNode.m
 @implementation BooleanNode : Node
 /* glue code */
 - (id)initWithX:(int32_t)x AndFlag:(BOOL)flag {
@@ -1222,7 +1222,7 @@ public interface FormElement <: UIComponent {
     @ForeignGetterName["isEditable"]
     public mut prop editable: Bool
 //   .  .  .
-@end
+}
 ```
 
 **NOTE:** Specifying `@ForeignSetterName["setEditable:"]` is unnecessary,
@@ -1717,8 +1717,8 @@ public open class MyContainer <: NSObject {
 //       .  .  .
     public open func addItemWithUuid(item: ?MyItem, uuid: ?NSString): Unit
     public open func itemWithUuid(uuid: ?NSString): ?MyItem
-    public open func uuidForItem:(item: ?MyItem): ?NSString
-    public open mut prop allItems ?NSArray/*<MyItem>*/
+    public open func uuidForItem(item: ?MyItem): ?NSString
+    public open mut prop allItems: ?NSArray/*<MyItem>*/
 }
 ```
 
@@ -1880,7 +1880,7 @@ public open class MyContainer <: NSObject {
 //       .  .  .
     public open func addItemWithUuid(item: MyItem, uuid: NSString): Unit
     public open func itemWithUuid(uuid: NSString): ?MyItem
-    public open func uuidForItem:(item: MyItem): ?NSString
+    public open func uuidForItem(item: MyItem): ?NSString
     public open mut prop allItems: NSArray/*<MyItem*>*/
 }
 ```
@@ -2281,7 +2281,7 @@ in an error.
 **Example:**
 
 ```toml
-import = "../common.toml"
+imports = ["../common.toml"]
 ```
 
 

@@ -1445,8 +1445,8 @@ public record Node (int value, Node next) {}
 ```
 
 ```cangjie
-@Java["Node"]
-public foreign class Node <: Record {
+@JavaMirror["Node"]
+public class Node <: Record {
     public init(value: Int32, next: ?Node)
 
     public func toJString(): JString
