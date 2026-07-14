@@ -75,8 +75,9 @@ Objective-C 和仓颉均支持全局函数，全局函数不是任何类型的�
 @ObjCImpl
 public class BooleanNode <: Node {
     private let _flag: Bool
+    @ForeignName["initWithX:AndFlag:"]
     public init(x: Int32, flag: Bool) {
-        super.init(x)
+        super(x)
         this._flag = flag
     }
     public func isFlagged(): Bool {
@@ -91,7 +92,7 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 // BooleanNode.h
 @interface BooleanNode : Node
 /* 胶水层代码 */
-- (id)init:(int32_t)x:(BOOL)flag;
+- (id)initWithX:(int32_t)x AndFlag:(BOOL)flag;
 - (BOOL)isFlagged;
 /* 其他胶水层代码 */
 @end
@@ -101,7 +102,7 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 // BooleanNode.m
 @implementation BooleanNode : Node
 /* 胶水层代码 */
-- (id)init:(int32_t)x:(BOOL)flag {
+- (id)initWithX:(int32_t)x AndFlag:(BOOL)flag {
     /* 胶水代码：构造一个仓颉 BooleanNode(x, flag) 实例，
     *  并将其与正在构造的 Objective-C 实例（即 'self'）关联起来。
     */
@@ -194,6 +195,7 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 #import <Foundation/Foundation.h>
 
 @interface M : NSObject
+- (instancetype)init;
 - (void)foo;
 @end
 ```
@@ -203,8 +205,14 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 #import "M.h"
 
 @implementation M
+- (instancetype)init {
+    if (self = [super init]) {
+        // 一些初始化工作
+    }
+    return self;
+}
 - (void) foo {
-    printf("Hello from ObjC M.foo()\n");
+    printf("Hello from Objective-C M.foo()\n");
 }
 @end
 ```
@@ -217,6 +225,7 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 #import "M.h"
 
 @interface A : M
+- (instancetype)init;
 - (void)foo;
 @end
 ```
@@ -242,7 +251,7 @@ ObjCInteropGen <config-file>
 ```toml
 # A.toml
 # 将 M 的镜像及其可能依赖的任何镜像放置在 'objcworld' 包中：
-[[package]]
+[[packages]]
 filters = { include = ["M", "NS.+"] }
 package-name = "objcworld"
 
@@ -295,7 +304,7 @@ ObjCInteropGen A.toml
     .../NSObjCRuntime.h:626:74: error: unknown type name 'NSUInteger'
     ```
 
-    某些时候，开发者需要给 clang 传入额外的参数，要么“`-DTARGET_OS_IPHONE=1`”或“`-DTARGET_OS_OSX=1`”。
+    某些时候，开发者需要给 clang 传入额外的参数 "`-DTARGET_OS_IPHONE=1`"。
 
     将该额外的参数加入 `[sources-mixins]` 表中的 `arguments-append` 数组，在上述示例中，该配置被注释了：
 
@@ -404,21 +413,19 @@ ObjCInteropGen A.toml
 
 <!-- compile -->
 ```cangjie
-package cjworld           // Same package name
+package objcworld         // 为简洁起见，使用相同的包名
 
-import objc.lang.*  // Always required
+import objc.lang.*  // 始终需要导入
 
 @ObjCImpl
 public class A <: M {
-    public init() {
-        super()
-    }
-
     override public open func foo(): Unit {
         println("Hello from overridden A.foo()")
     }
 }
 ```
+
+> **注意：** `A` 的默认构造函数会调用 `super()`，这在 Objective-C 语义上等价于调用 `[super init]`，不过前提是它会返回一个合适类的实例。
 
 #### 步骤四：编译互操作类
 
@@ -438,7 +445,7 @@ cjc --target=arm64-apple-ios-simulator \
 
 `<source-files>` 是互操作类的源文件，以及各镜像类型定义的源文件。
 
-`<target-file>` 是得到的包含互操作类逻辑的动态库的文件名，例如 `libcjworld.dylib`。
+`<target-file>` 是得到的包含互操作类逻辑的动态库的文件名，例如 `libobjcworld.dylib`。
 
 cjc 会同时自动生成 Objective-C 源文件（`.h` 和 `.m` 文件），这些 Objective-C 源文件中包含有 Objective-C 包装类（对应互操作类）。这些源文件默认生成在 `./objc-gen` 子目录中。
 
@@ -453,23 +460,23 @@ xcrun codesign --sign - <dylib-file>
 首先编译互操作类源文件：
 
 ```bash
-cd cjworld
+cd objcworld
 
 cjc --target=arm64-apple-ios-simulator \
     --sysroot=$(xcrun --show-sdk-path --sdk iphonesimulator) \
     --output-type=dylib \
     --int-overflow=wrapping \
     *.cj \
-    -o libcjworld.dylib \
+    -o libobjcworld.dylib \
     --link-options "-undefined dynamic_lookup"
 ```
 
-cjc 将生成三个文件：`./libcjworld.dylib`、`./objc-gen/A.h` 和 `./objc-gen/A.m`。
+cjc 将生成三个文件：`./libobjcworld.dylib`、`./objc-gen/A.h` 和 `./objc-gen/A.m`。
 
 然后为动态库签名：
 
 ```bash
-xcrun codesign --sign - libcjworld.dylib
+xcrun codesign --sign - libobjcworld.dylib
 ```
 
 #### 步骤五：整合所有产物
@@ -492,13 +499,13 @@ mkdir -p CJRuntimeDylibs
 cp $CANGJIE_HOME/runtime/lib/ios_simulator_aarch64_cjnative/*.dylib CJRuntimeDylibs/
 ```
 
-将这些动态库以及 `./cjworld/libcjworld.dylib` 作为依赖添加进 XCode 工程，具体操作是，在“BuildPhases”中的“Copy Files”和“Link Binary With Libraries”列表中将它们添加进去。
+将这些动态库以及 `./objcworld/libobjcworld.dylib` 作为依赖添加进 XCode 工程，具体操作是，在“BuildPhases”中的“Copy Files”和“Link Binary With Libraries”列表中将它们添加进去。
 
 将所有 cjc 生成的 `.h` 和 `.m` 文件放置到 XCode 工程根目录：
 
 ```bash
-mv cjworld/objc-gen/*.h ./
-mv cjworld/objc-gen/*.m ./
+mv objcworld/objc-gen/*.h ./
+mv objcworld/objc-gen/*.m ./
 ```
 
 然后重新构建 XCode 工程。
@@ -600,8 +607,12 @@ Objective-C 源码中，被标记为 `unavailable` 的声明将被忽略。
     
     @ObjCMirror
     public open class B <: A {
+        @ForeignName["foo"]
         public open func fooInstance()
+
+        @ForeignName["bar"]
         public static func barStatic()
+
         public open func bar()
     }
     ```
@@ -1057,7 +1068,7 @@ Objective-C 镜像生成器配置文件是一个纯文本文件，遵循 TOML �
 
 #### 输出根目录
 
-`[output-roots]`表的每个子表键定义了一个目录标签，这个目录标签对应了本地文件系统中的一个路径，这个路径定义于子表中的`path`配置项。[`[[package]]`数组](#镜像生成器单包配置) 中的 `output-root` 配置项将被指定一个目标标签，该目录标签对应的本地文件系统路径将被作为根目录，该 `[[package]]` 相应包下生成的镜像源文件均将相对于该根目录放置。
+`[output-roots]`表的每个子表键定义了一个目录标签，这个目录标签对应了本地文件系统中的一个路径，这个路径定义于子表中的`path`配置项。[`[[packages]]`数组](#镜像生成器单包配置) 中的 `output-root` 配置项将被指定一个目标标签，该目录标签对应的本地文件系统路径将被作为根目录，该 `[[packages]]` 相应包下生成的镜像源文件均将相对于该根目录放置。
 
 **示例：**
 
@@ -1068,17 +1079,17 @@ path = "./lib/src"
 [output-roots.app]
 path = "./main/src"
 
-[[package]]
+[[packages]]
 package-name = "com.vendor1.lib1"
 output-root = "lib"  # 生成的镜像源文件将生成于目录 "./lib/src/com/vendor1/lib1"
 filters = ...
 
-[[package]]
+[[packages]]
 package-name = "com.vendor2.lib2"
 output-root = "lib"  # 生成的镜像源文件将生成于目录 "./lib/src/com/vendor2/lib2"
 filters = ...
 
-[[package]]
+[[packages]]
 package-name = "com.mycompany.app"
 output-root = "app"  # 生成的镜像源文件将生成于目录 "./main/src/com/mycompany/app"
 filters = ...
@@ -1132,7 +1143,7 @@ arguments-append = [
 
 #### 镜像生成器单包配置
 
-`[[package]]` 数组的每个表项指定了一个目标仓颉包名，一组名称过滤器，用于说明哪些 Objective-C 实体将被镜像到该仓颉包中，以及可选的，该包的输出目录。
+`[[packages]]` 数组的每个表项指定了一个目标仓颉包名，一组名称过滤器，用于说明哪些 Objective-C 实体将被镜像到该仓颉包中，以及可选的，该包的输出目录。
 
 **支持以下配置项：**
 
@@ -1150,7 +1161,7 @@ arguments-append = [
   [output-roots.main]
   path="./cj-mirrors"
   
-  [[package]]
+  [[packages]]
   package-name = "objc.foundation"
   output-root = "main"
   ```
@@ -1163,7 +1174,7 @@ arguments-append = [
 
   ```toml
   # Foundation 框架镜像
-  [[package]]
+  [[packages]]
   package-name = "objc.foundation"
   filters = { include = "NS.+" }
   ```
@@ -1262,7 +1273,7 @@ id = "NSObjectProtocol"
 
 #### 导入其他配置文件
 
-`imports` 配置项的值是一个字符串数组，每个字符串是其他配置文件的文件路径，该配置文件中的配置信息将被添加进当前配置文件中。被导入的配置文件中的 `package` 和 `mappings` 条目配置项中的配置信息将被追加到当前配置文件中。
+`imports` 配置项的值是一个字符串数组，每个字符串是其他配置文件的文件路径，该配置文件中的配置信息将被添加进当前配置文件中。被导入的配置文件中的 `packages` 和 `mappings` 条目配置项中的配置信息将被追加到当前配置文件中。
 
 支持配置文件的嵌套导入，但如果检测到配置文件的循环依赖导入则将导致编译器报错。
 

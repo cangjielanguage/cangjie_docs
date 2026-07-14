@@ -89,7 +89,7 @@ public open class Node {
 public class BooleanNode <: Node {
     private let flag: Bool
     public init(id: Int32, flag: Bool) {
-        super.init(id)
+        super(id)
         this.flag = flag
     }
     public func isFlagged(): Bool {
@@ -233,7 +233,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     names-of-mirrored-types
 ```
 
@@ -244,7 +244,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name -Djar.mode=true \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     jar-file
 ```
 
@@ -263,7 +263,7 @@ java -Dpackage.mode=true -Dpackage.name=javaworld \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path ${ANDROID_SDK}/platforms/android-35/android.jar \
     --class-path ${ANDROID_SDK}/platforms/android-35/android.jar:./App.jar \
-    --d ./src/cj \
+    -d ./src/cj \
     com.example.a.A com.example.b.B
 ```
 
@@ -430,7 +430,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     names-of-mirrored-types
 ```
 
@@ -441,7 +441,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name -Djar.mode=true \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     jar-file
 ```
 
@@ -480,7 +480,7 @@ java -Dpackage.mode=true -Dpackage.name=javaworld \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path /home/user/Android/Sdk/platforms/android-35/android.jar \
     --class-path /home/user/Android/Sdk/platforms/android-35/android.jar:App.jar \
-    --d ./src/cj \
+    -d ./src/cj \
     com.example.a.A com.example.b.B com.example.c.C
 ```
 
@@ -746,9 +746,10 @@ public open priceInUS_Per(arg0: WeightUnit): CurrencyAmount
 
 ```java
 public class Outer {
-    public static class Static {}
     public class Inner {}
+    public static class Static {}
     public Inner getInner() { return new Inner(); }
+    public Static getStatic() { return new Static(); }
 }
 ```
 
@@ -759,16 +760,17 @@ public open class Outer {
     public init()
 
     public open func getInner(): ?Outer_Inner
-}
-
-@JavaMirror["Outer$Static"]       // Original binary name is retained
-public open class Outer_Static {  // '$' is replaced with '_'
-    public init()
+    public open func getStatic(): ?Outer_Static
 }
 
 @JavaMirror["Outer$Inner"]       // Original binary name is retained
 public open class Outer_Inner {  // '$' is replaced with '_'
     public init(p0: ?Outer)      // Extra parameter for enclosing instance
+}
+
+@JavaMirror["Outer$Static"]       // Original binary name is retained
+public open class Outer_Static {  // '$' is replaced with '_'
+    public init()
 }
 ```
 
@@ -995,11 +997,11 @@ public open interface D <: C {
 
 #### 单包模式
 
-仓颉语言不支持 Java 那样的循环导入，因此镜像生成器无法将原始 Java 包名直接用作生成的仓颉包名。为避免仓颉侧出现循环导入依赖，镜像生成器必须将所有生成的镜像类型统一放在同一个仓颉包中，即使这些类型在 Java 侧来源于多个不同的包。该仓颉包名由用户通过 `--package-name` 选项指定，默认为 `UNNAMED`。
+仓颉语言不支持 Java 那样的循环导入，因此镜像生成器无法将原始 Java 包名直接用作生成的仓颉包名。为避免仓颉侧出现循环导入依赖，镜像生成器必须将所有生成的镜像类型统一放在同一个仓颉包中，即使这些类型在 Java 侧来源于多个不同的包。该仓颉包名由用户通过系统属性 `package.name` 指定，默认为 `UNNAMED`。
 
-举例来说，假设开发者运行镜像生成器，指定以下选项：
+举例来说，假设开发者运行镜像生成器，指定以下系统属性：
 
-`--package-name java.world`
+`    -Dpackage.name=java.world`
 
 镜像生成器将把生成的仓颉类型放在 `java.world` 包中，而原 Java 包名则通过 `@JavaMirror` 注解的参数得以传递至仓颉侧：
 
