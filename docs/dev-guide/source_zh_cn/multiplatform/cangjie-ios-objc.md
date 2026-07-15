@@ -306,7 +306,7 @@ ObjCInteropGen A.toml
     .../NSObjCRuntime.h:626:74: error: unknown type name 'NSUInteger'
     ```
 
-    某些时候，开发者需要给 clang 传入额外的参数 "`-DTARGET_OS_IPHONE=1`"。
+    在某些系统上，开发者需要给 clang 传入额外的参数 "`-DTARGET_OS_IPHONE=1`"。
 
     将该额外的参数加入 `[sources-mixins]` 表中的 `arguments-append` 数组，在上述示例中，该配置被注释了：
 
@@ -427,7 +427,7 @@ public class A <: M {
 }
 ```
 
-> **注意：** `A` 的默认构造函数会调用 `super()`，这在 Objective-C 语义上等价于调用 `[super init]`，不过前提是它会返回一个合适类的实例。
+> **注意：** `A` 的默认构造函数会调用 `super()`，这在 Objective-C 语义上等价于调用 `[super init]`，尽管假设了它会返回一个合适类的实例。
 
 #### 步骤四：编译互操作类
 
