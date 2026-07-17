@@ -1,6 +1,6 @@
 # 仓颉-ObjC 互操作
 
-> **注意：**
+> **注意**：
 >
 > Objective-C 互操作特性为实验特性，尚在持续完善中。
 
@@ -133,7 +133,9 @@ cjc 将同时生成一对 Objective-C 源码，其内容类似于以下代码块
 * `CString`
 * 作为函数返回值类型的 `Unit`
 
-> **重要：** 当前版本中，`CPointer<T>` 与 `VArray<T,$N>` **本身**不是 Objective-C 兼容类型，但这并不限制它们在 `@C struct` 或 `CFunc<F>` 函数类型中的使用。
+> **注意**：
+>
+> 当前版本中，`CPointer<T>` 与 `VArray<T, $N>` **本身**不是 Objective-C 兼容类型，但这并不限制它们在 `@C struct` 或 `CFunc<F>` 函数类型中的使用。
 
 ## 在仓颉侧使用 Objective-C
 
@@ -338,7 +340,7 @@ ObjCInteropGen A.toml
 
     * 其余构造函数和成员函数：可选择性添加 `@ForeignName` 注解。若未添加，cjc 会按以下规则自动推导 Objective-C 方法名：无参函数的方法名与原函数名相同（构造函数则为 `init`）；仅有一个形参的函数，方法名为原函数名加上 `:` 后缀（构造函数则为 `init:`）。
 
-> **注意：**
+> **注意**：
 >
 > 当前版本的 cjc 并不会全面校验 _`foreign-name`_ 的合法性。特别地，cjc 并不会校验 _`foreign-name`_ 中冒号 `:` 的数量是否与构造函数/成员函数的形参个数一致。
 
@@ -407,7 +409,7 @@ ObjCInteropGen A.toml
 
 * 泛型 Objective-C 类型将被镜像为非泛型仓颉类型，详情请参见 [Objective-C 泛型](#objective-c-泛型)。
 
-* **重要限制：** 镜像类型和互操作类的实例，即 Objective-C 引用类型的值，禁止逃逸至仓颉全局变量、静态变量，以及任何能够在每次调用之间持久化的数据结构中。
+* 镜像类型和互操作类的实例，即 Objective-C 引用类型的值，禁止逃逸至仓颉全局变量、静态变量，以及任何能够在每次调用之间持久化的数据结构中。
 
 **端到端示例（续）：**
 
@@ -427,7 +429,7 @@ public class A <: M {
 }
 ```
 
-> **注意：**
+> **注意**：
 >
 > `A` 的默认构造函数会调用 `super()`，这在 Objective-C 语义上等价于调用 `[super init]`，尽管假设了它会返回一个合适类的实例。
 
@@ -485,7 +487,7 @@ xcrun codesign --sign - libobjcworld.dylib
 
 #### 步骤五：整合所有产物
 
-> **重要：** 当前版本的镜像生成器**不会**将原始头文件名传播到镜像类型声明中。因此，上一步生成的包装类可能 `#import` 不存在的头文件而无法编译。临时解决办法如下。
+当前版本的镜像生成器**不会**将原始头文件名传播到镜像类型声明中。因此，上一步生成的包装类可能 `#import` 不存在的头文件而无法编译。临时解决办法如下。
 
 例如，若互操作类的成员函数形参或返回类型为 UIKit 的 `UIDevice`，生成的包装类源文件可能包含：
 
@@ -505,7 +507,7 @@ xcrun codesign --sign - libobjcworld.dylib
 #import <UIKit/UIDevice.h>
 ```
 
-> **注意：**
+> **注意**：
 >
 > Foundation 框架是例外——`cjc` 生成的所有 Objective-C 文件顶部均包含：
 >
@@ -605,7 +607,7 @@ mv objcworld/objc-gen/*.m ./
 
 当前版本的 Objective-C 镜像生成器遵循以下所描述的 Objective-C 到仓颉的类型映射规格。
 
-### 一般注意事项
+### 注意事项
 
 Objective-C 镜像生成器依赖 Clang 解析 Objective-C 源码，调用时带有 `-fobjc-arc` 编译选项。
 
@@ -694,7 +696,7 @@ Objective-C 基本数据类型将被映射为对应的仓颉基本数据类型�
 * `NSObject` 镜像类隐式定义实例成员函数 `toString()`：
 
   ```cangjie
-      public open func toString(): String
+  public open func toString(): String
   ```
 
   该函数调用接收者的 `description` 方法，将结果转换为仓颉 `String` 并返回。
@@ -702,12 +704,12 @@ Objective-C 基本数据类型将被映射为对应的仓颉基本数据类型�
 * `NSString` 镜像类隐式定义接受仓颉 `String` 的构造函数：
 
   ```cangjie
-      public init(s: String)
+  public init(s: String)
   ```
 
   它以实参的转码字符数据初始化正在构造的 `NSString` 实例。
 
-> **注意：**
+> **注意**：
 >
 > 镜像类的仓颉名称无关紧要；`@ObjCMirror` 注解的值必须分别为 `"NSObject"` 与 `"NSString"`，编译器才会插入上述隐式声明：
 
@@ -767,14 +769,17 @@ public struct A {
 
 ### Objective-C 枚举类型
 
-C 枚举声明镜像为一系列顶层 `public const` 变量声明：各常量名与枚举常量一致，初始化器为对应值。此外声明一个类型别名，其名为原枚举名（匿名枚举则合成唯一名称），等于镜像底层 C 类型的仓颉值类型别名；枚举的**使用处**均镜像为该类型别名。
+C 枚举声明镜像为一系列顶层 `public const` 变量声明：各常量名与枚举常量一致，初始化器为对应值。此外声明一个类型别名，其名为原枚举名（匿名枚举则合成唯一名称），等于镜像底层 C 类型的仓颉值类型别名；枚举的使用处均镜像为该类型别名。
 
-> **警告：** 枚举名成为整型仓颉类型的别名后，其值集并不限于关联的 `const` 变量集合，原声明的类型安全在镜像过程中丢失。
+> **注意**：
+>
+> 枚举名成为整型仓颉类型的别名后，其值集并不限于关联的 `const` 变量集合，原声明的类型安全在镜像过程中丢失。
 
 ```objectivec
 enum E : char { NONE, ONE, TWO, FIVE = ONE + TWO + TWO };
 ```
 
+<!-- compile -->
 ```cangjie
 public type M = Int8
 
@@ -798,7 +803,7 @@ Objective-C 类与协议分别镜像为仓颉类与接口。所有此类镜像�
 
 所有方法的镜像均省略函数体，外观类似仓颉抽象成员函数。
 
-声明了可变参数的方法，参数列表中的 `, ...` 部分被忽略。
+声明了可变参数的方法，参数列表中的 `...` 部分被忽略。
 
 完整 Objective-C 方法名（选择器）可含 `:`，不是合法仓颉标识符，按以下规则变换为仓颉函数名：
 
@@ -820,6 +825,7 @@ Objective-C 类与协议分别镜像为仓颉类与接口。所有此类镜像�
 
 镜像结果为：
 
+<!-- compile -->
 ```cangjie
 @ObjCMirror
 public open class A {
@@ -838,7 +844,7 @@ public open class A {
 
 **属性** 通常镜像为相应类型的 `public` 仓颉成员属性，但存在例外与细节：
 
-> Objective-C `@property` 本质上是访问方法与后备变量声明的语法糖。类中或父类中可能已声明签名匹配的方法，编译器自动将其与属性关联；指令也可显式指定非标准名称的 getter/setter。这种灵活性意味着即使属性本身未被重写，getter/setter 仍可能被重写。Objective-C 中还常见子类以 `readwrite` 属性覆盖父类 `readonly` 属性的模式。而仓颉要求重写属性与被重写属性可变性一致，且成员属性不得与成员函数同名。上述差异导致以下限制：
+Objective-C `@property` 本质上是访问方法与后备变量声明的语法糖。类中或父类中可能已声明签名匹配的方法，编译器自动将其与属性关联；指令也可显式指定非标准名称的 getter/setter。这种灵活性意味着即使属性本身未被重写，getter/setter 仍可能被重写。Objective-C 中还常见子类以 `readwrite` 属性覆盖父类 `readonly` 属性的模式。而仓颉要求重写属性与被重写属性可变性一致，且成员属性不得与成员函数同名。上述差异导致以下限制：
 
 * 若属性重写父类属性，则**不**镜像该重写属性（子类实例上仍会经动态派发调用其 getter/setter）。
 
@@ -858,6 +864,7 @@ public open class A {
 @end
 ```
 
+<!-- compile -->
 ```cangjie
 public interface FormElement <: UIComponent {
     @ForeignGetterName["isEditable"]
@@ -865,7 +872,7 @@ public interface FormElement <: UIComponent {
 }
 ```
 
-> **注意：**
+> **注意**：
 >
 > 无需指定 `@ForeignSetterName["setEditable:"]`，该名称已是该 setter 的标准名称。
 
@@ -896,6 +903,7 @@ Objective-C 的 `@implementation` 声明将被忽略。
   @end
   ```
 
+  <!-- compile -->
   ```cangjie
   @ObjCMirror
   public open class Point2D {
@@ -916,7 +924,11 @@ Objective-C 的 `@implementation` 声明将被忽略。
 
 * 在 Objective-C 中 `init` 方法与其他方法一样可继承，而仓颉构造函数不继承。因此镜像类或互操作类实例化时，无法调用父类 `init` 所镜像的构造函数。上一项中的工厂函数**可**继承，但不得用作 `super` 构造器，因其返回的是已完全初始化的超类实例。
 
-* 与仓颉等语言中的构造函数不同，Objective-C `init` 方法可返回替代对象且有显式返回类型。现代 Objective-C 中返回类型通常为 `instancetype`，表示指向接收者类（或其子类）实例的指针，但仍可能返回 `nil` 以表示初始化失败（且不必抛异常）。当前实现期望 `init` 方法返回**合适类**的实例，不校验返回值。**警告：若从仓颉调用的 `init` 返回 `nil` 或指向非接收者类（及其子类）实例的指针，行为未定义。**
+* 与仓颉等语言中的构造函数不同，Objective-C `init` 方法可返回替代对象且有显式返回类型。现代 Objective-C 中返回类型通常为 `instancetype`，表示指向接收者类（或其子类）实例的指针，但仍可能返回 `nil` 以表示初始化失败（且不必抛异常）。当前实现期望 `init` 方法返回**合适类**的实例，不校验返回值。
+
+> **注意**：
+>
+> 若从仓颉调用的 `init` 返回 `nil` 或指向非接收者类（及其子类）实例的指针，行为未定义。
 
 **实例变量** 镜像为相应镜像类型的实例成员变量。Objective-C 中不存在类变量。
 
@@ -941,6 +953,7 @@ Objective-C 协议可包含可选实例方法，仓颉无直接对应。此类�
 @end
 ```
 
+<!-- compile -->
 ```cangjie
 @ObjCMirror
 public interface MyDelegate {
@@ -971,7 +984,9 @@ public interface MyDelegate {
 
 ### Objective-C 指针类型
 
-> **重要：** 当前版本在同时使用 Objective-C 特有类型的上下文中（如 Objective-C 方法或全局函数的形参/返回类型，且该函数还接受/返回指向 Objective-C 类实例或 `id` 的指针），尚不支持 `CPointer<T>`。临时解决办法：内置类型 [`ObjCPointer<T>`](#objective-c-内置类型) 额外支持满足 `CType` 约束的类型变元。
+> **注意**：
+>
+> 当前版本在同时使用 Objective-C 特有类型的上下文中（如 Objective-C 方法或全局函数的形参/返回类型，且该函数还接受/返回指向 Objective-C 类实例或 `id` 的指针），尚不支持 `CPointer<T>`。临时解决办法：内置类型 [`ObjCPointer<T>`](#objective-c-内置类型) 额外支持满足 `CType` 约束的类型变元。
 
 Objective-C 指针类型的 `const`、`volatile` 和 `restrict` 修饰符均将被忽略。
 
@@ -1099,11 +1114,11 @@ public open class G/*<T>*/ <: NSObject {
 
 顶层 Objective-C 函数镜像为带 `@ObjCMirror` 注解的 `public` 全局函数声明，形参与返回类型替换为相应镜像类型；返回 `void` 的函数返回类型为 `Unit`。省略函数体。
 
-> **注意：**
+> **注意**：
 >
 > 若函数所有形参类型与返回类型均满足 `CType` 约束，生成器产出常规 `foreign func` 声明。
 
-声明了可变参数的函数，参数列表中的 `, ...` 部分被忽略。
+声明了可变参数的函数，参数列表中的 `...` 部分被忽略。
 
 ### Objective-C 内置类型
 
@@ -1185,9 +1200,9 @@ public open class MyContainer <: NSObject {
 }
 ```
 
-上述 `Option<T>` 装包确保了即便 Objective-C 侧往仓颉侧传入 `nil` 值，仓颉侧不会因此崩溃，但这个解决方法不可避免地带来了部分性能和内存足迹的劣化。解决方法引入的另一个缺点是[型变的丢失](#型变丢失)。不过，[Objective-C 可空性注解](#objective-c-可空性注解) 显著消减了上述由于引用封装所带来的影响。类型测试方面的注意事项目见 [外部类型的转换与类型测试](#外部类型的转换与类型测试)。
+上述 `Option<T>` 装包确保了即便 Objective-C 侧往仓颉侧传入 `nil` 值，仓颉侧不会因此崩溃，但这个解决方法不可避免地带来了部分性能和内存足迹的劣化。解决方法引入的另一个缺点是[型变的丢失](#型变丢失)。不过，[Objective-C 可空性注解](#objective-c-可空性注解) 显著消减了上述由于引用封装所带来的影响。类型测试方面的注意事项见 [外部类型的转换与类型测试](#外部类型的转换与类型测试)。
 
-> **注意：**
+> **注意**：
 >
 > 上述问题对于能够被映射为仓颉 `CPointer<T>` 类型的 C 类型并不构成麻烦，因为 `CPointer<T>` 类型实现内部提供有相关的空指针检查功能。
 
@@ -1272,13 +1287,9 @@ public open class D <: C {
 
 XCode6.3 开始支持 Objective-C 的可空性注解，其目的是更好地与新 iOS/OSX 开发语言 Swift 集成配合，Swift 本身将调用 Objective-C 所提供的 API。
 
-> **Objective-C 可空性标注：**
->
-> 关键字 `nullable`、`nonnull` 可用于注修饰 Objective-C 属性、方法形参类型和返回类型。它们的含义分别是指定的实体可能/不可能持有或接受 `nil` 值。除此之外还有关键字 `null_unspecified`，意思是并不确定指定的实体到底是可能还是不可能持有或接受 `nil` 值，不过该关键字极少被使用。
->
-> 另外，指针类型也可以被 `_Nullable`、`_Nonnull` 注解，与上述各关键字的语义相同。
->
-> Objective-C 属性也可以被指定为 `null_resettable`，语义是该属性的 getter 不可能返回 `nil` 值，而如果调用 setter 时传入 `nil` 值，该属性将被重置为某默认值。
+**Objective-C 可空性标注：**
+
+关键字 `nullable`、`nonnull` 可用于注修饰 Objective-C 属性、方法形参类型和返回类型。它们的含义分别是指定的实体可能/不可能持有或接受 `nil` 值。除此之外还有关键字 `null_unspecified`，意思是并不确定指定的实体到底是可能还是不可能持有或接受 `nil` 值，不过该关键字极少被使用。另外，指针类型也可以被 `_Nullable`、`_Nonnull` 注解，与上述各关键字的语义相同。Objective-C 属性也可以被指定为 `null_resettable`，语义是该属性的 getter 不可能返回 `nil` 值，而如果调用 setter 时传入 `nil` 值，该属性将被重置为某默认值。
 
 因此，如果某处对 Objective-C 引用类型的使用被标记为不可为空（例如被 `nonnull` 标记），则该使用处将被免去 `Option<T>` 装包。即镜像生成器仅对未被 `nonnull` 或 `_Nonnull` 注解的成员属性类型、成员函数形参类型及返回类型进行 `Option<T>` 装包。
 
@@ -1308,7 +1319,7 @@ public open class MyContainer <: NSObject {
 }
 ```
 
-> **注意：**
+> **注意**：
 >
 > 当前尚不支持正确地将 Objective-C 属性的 `null_resettable` 的语义传播至仓颉成员属性，故该注解将被视作 `nullable` 处理。
 
@@ -1322,7 +1333,9 @@ public open class MyContainer <: NSObject {
 
 当前版本中，`if-let` 与 `while-let` 的支持有限：`let` 表达式必须构成整个条件表达式，不得与 `&&` 或 `||` 组合。
 
-> **重要：** 如 [Objective-C 侧 nil 值处理](#objective-c-侧-nil-值处理) 所述，经 `Option<T>` 装包的镜像类型与互操作类值，类型测试前须先做空值检测并拆包。原因是仓颉泛型对类型变元不变：`e is ?T` 仅当 `e` 的类型恰好为 `Option<T>` 时为 `true`，而非 `Option<U>`（`U <: T`）。此外，无论 `e` 为 `Some(v)` 还是 `None`，均不对 `v` 进行类型测试。
+> **注意**：
+>
+> 如 [Objective-C 侧 nil 值处理](#objective-c-侧-nil-值处理) 所述，经 `Option<T>` 装包的镜像类型与互操作类值，类型测试前须先做空值检测并拆包。原因是仓颉泛型对类型变元不变：`e is ?T` 仅当 `e` 的类型恰好为 `Option<T>` 时为 `true`，而非 `Option<U>`（`U <: T`）。此外，无论 `e` 为 `Some(v)` 还是 `None`，均不对 `v` 进行类型测试。
 
 ## Objective-C 镜像生成器参考
 
@@ -1576,7 +1589,9 @@ imports = ["../common.toml"]
 
 当控制流首次进入仓颉代码时，所有全局及 `static` 仓颉变量完成初始化，所有仓颉类型的静态初始化器被调用。这发生在[互操作类](#互操作类)首次从 Objective-C 代码被访问时。
 
-> **重要：** 上述仓颉初始化代码**不得**以任何方式使用镜像类型或互操作类，否则将导致死锁。
+> **注意**：
+>
+> 上述仓颉初始化代码**不得**以任何方式使用镜像类型或互操作类，否则将导致死锁。
 
 ### 终结
 
@@ -1592,7 +1607,9 @@ imports = ["../common.toml"]
 
 Objective-C 与仓颉均支持异常。双向互操作场景中，栈上两种语言帧可能交错；异常抛出时栈展开可能跨越语言边界。
 
-> **重要：** 当前版本中，此类跨边界展开导致**未定义行为**。从仓颉调用的 Objective-C 方法/函数不得遗留未捕获异常，反之亦然。
+> **注意**：
+>
+> 当前版本中，此类跨边界展开导致**未定义行为**。从仓颉调用的 Objective-C 方法/函数不得遗留未捕获异常，反之亦然。
 
 无法在仓颉代码中 `throw` Objective-C 异常，亦无法在 Objective-C 代码中 `throw` 仓颉异常。
 
@@ -1600,13 +1617,13 @@ Objective-C 与仓颉均支持异常。双向互操作场景中，栈上两种�
 
 Objective-C 与仓颉对象分别驻留于各自堆中。互操作库与桥接代码确保：只要另一语言中的可访问变量或数据结构仍持有对某对象的引用，该对象就不会被释放或回收。
 
-> **重要：** 跨语言堆一致性机制有三项重大限制：
+跨语言堆一致性机制有三项重大限制：
 
 1. 曾在仓颉代码中使用过的 Objective-C 对象，其释放时机取决于仓颉垃圾回收器；短暂引用未必立即释放。在循环中遍历大型 Objective-C 数组或集合可能暂时抬高内存占用，直至 Cangjie GC 运行。
 
 2. Objective-C ARC 与仓颉垃圾回收器各自仅在其环境内运行，跨语言循环引用可能导致内存泄漏。应避免或主动断开循环引用。
 
-3. 当前版本中，镜像类型与互操作类的值**不得**存入仓颉全局或 `static` 变量，亦不得存入此类变量所引用的数据结构。因此禁止将外部类型值转换为 `Object` 或 `Any`。正在消除此限制。**警告：** `cjc` 尚未完全强制执行上述限制，须严格遵守编程纪律，否则可能导致异常终止。
+3. 当前版本中，镜像类型与互操作类的值**不得**存入仓颉全局或 `static` 变量，亦不得存入此类变量所引用的数据结构。因此禁止将外部类型值转换为 `Object` 或 `Any`。正在消除此限制。**注意**： `cjc` 尚未完全强制执行上述限制，须严格遵守编程纪律，否则可能导致异常终止。
 
 ### 线程
 
