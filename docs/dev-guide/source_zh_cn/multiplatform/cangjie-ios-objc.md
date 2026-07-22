@@ -507,14 +507,12 @@ xcrun codesign --sign - libobjcworld.dylib
 #import <UIKit/UIDevice.h>
 ```
 
-> **注意**：
->
-> Foundation 框架是例外——`cjc` 生成的所有 Objective-C 文件顶部均包含：
->
-> ```objectivec
-> #import <Foundation/Foundation.h>
-> #import <stddef.h>
-> ```
+Foundation 框架是例外——`cjc` 生成的所有 Objective-C 文件顶部均包含：
+
+```objectivec
+#import <Foundation/Foundation.h>
+#import <stddef.h>
+```
 
 临时解决办法：手动创建此类镜像类型对应的 `.h` 文件，写入正确的 `#import` 声明，并将其加入 XCode 工程。此不便将在未来版本中消除。
 
@@ -709,9 +707,7 @@ Objective-C 基本数据类型将被映射为对应的仓颉基本数据类型�
 
   它以实参的转码字符数据初始化正在构造的 `NSString` 实例。
 
-> **注意**：
->
-> 镜像类的仓颉名称无关紧要；`@ObjCMirror` 注解的值必须分别为 `"NSObject"` 与 `"NSString"`，编译器才会插入上述隐式声明：
+  镜像类的仓颉名称无关紧要；`@ObjCMirror` 注解的值必须分别为 `"NSObject"` 与 `"NSString"`，编译器才会插入上述隐式声明：
 
   ```cangjie
   @ObjCMirror["NSObject"]
@@ -1593,7 +1589,7 @@ imports = ["../common.toml"]
 >
 > 上述仓颉初始化代码**不得**以任何方式使用镜像类型或互操作类，否则将导致死锁。
 
-### 终结
+### 终结器
 
 #### `dealloc`
 

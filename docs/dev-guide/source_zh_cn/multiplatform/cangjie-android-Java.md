@@ -591,7 +591,7 @@ let s: String = J.s2s(JString("Cangjie string")).getOrThrow().toString()
 若需要支持接收或返回 `null`，应使用 `?String` 而非 `String`。详情请参见 [Java `null` 值处理](#java-null-值处理)。
 
 `String` 与 `JString` 是互不相关的类型，不存在子类型关系。因此，互操作类中重写镜像 Java 父类方法的成员函数，其形参与返回类型必须与父类方法一致（通常为 `?JString`），`override` 修饰符才能正确生效：
->
+
 <!-- compile -->
 ```cangjie
 @JavaMirror
@@ -1725,7 +1725,7 @@ Java 类与接口在首次使用时初始化，触发条件包括：实例化、
 >
 > 上述仓颉初始化代码**不得**以任何方式使用镜像类型或互操作类，否则将导致死锁或崩溃。
 
-### 终结
+### 终结器
 
 #### Java 终结器
 
