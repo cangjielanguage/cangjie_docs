@@ -172,7 +172,7 @@ For example, when compiling the following Java interop class:
 public class BooleanNode <: Node {
     private let flag: Bool
     public init(id: Int32, flag: Bool) {
-        super.init(id)
+        super(id)
         this.flag = flag
     }
     public func isFlagged(): Bool {
@@ -379,7 +379,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     names-of-mirrored-types
 ```
 
@@ -390,7 +390,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name -Djar.mode=true \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     jar-file
 ```
 
@@ -437,7 +437,7 @@ java -Dpackage.mode=true -Dpackage.name=javaworld \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path ${ANDROID_SDK}/platforms/android-35/android.jar \
     --class-path ${ANDROID_SDK}/platforms/android-35/android.jar:./App.jar \
-    --d ./src/cj \
+    -d ./src/cj \
     com.example.a.A com.example.b.B
 ```
 
@@ -680,7 +680,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     names-of-mirrored-types
 ```
 
@@ -691,7 +691,7 @@ java -Dpackage.mode=true -Dpackage.name=package-name -Djar.mode=true \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path path-to-android-jar \
     --class-path full-application-classpath \
-    --d output-directory \
+    -d output-directory \
     jar-file
 ```
 
@@ -1238,9 +1238,10 @@ inner classes have an extra parameter for passing the enclosing instance
 
 ```java
 public class Outer {
-    public static class Static {}
     public class Inner {}
+    public static class Static {}
     public Inner getInner() { return new Inner(); }
+    public Static getStatic() { return new Static(); }
 }
 ```
 
@@ -1250,16 +1251,17 @@ public open class Outer {
     public init()
 
     public open func getInner(): ?Outer_Inner
+    public open func getStatic(): ?Outer_Static
+}
+
+@JavaMirror["Outer$Inner"]        // Original binary name is retained
+public open class Outer_Inner {   // '$' is replaced with '_'
+    public init(p0: ?Outer)       // Extra parameter for the enclosing instance
 }
 
 @JavaMirror["Outer$Static"]       // Original binary name is retained
 public open class Outer_Static {  // '$' is replaced with '_'
     public init()
-}
-
-@JavaMirror["Outer$Inner"]       // Original binary name is retained
-public open class Outer_Inner {  // '$' is replaced with '_'
-    public init(p0: ?Outer)      // Extra parameter for enclosing instance
 }
 ```
 
@@ -1443,8 +1445,8 @@ public record Node (int value, Node next) {}
 ```
 
 ```cangjie
-@Java["Node"]
-public foreign class Node <: Record {
+@JavaMirror["Node"]
+public class Node <: Record {
     public init(value: Int32, next: ?Node)
 
     public func toJString(): JString
@@ -1746,11 +1748,12 @@ The above [difference](#circular-import-dependencies-handling) between the
 two languages precludes the preservation of Java package names during mirror
 generation. In practical terms, the mirror generator must _always_ collect all
 generated mirror types in a single Cangjie package. The desired name of that
-package must be specified with the option `--package-name`.
+package must be specified with the system property `package.name`.
 
-For instance, if you run the mirror generator with the following option:
+For instance, if you run the mirror generator with the following system
+property:
 
-`    --package-name java.world`
+`    -Dpackage.name=java.world`
 
 it will place all generated mirror type declarations in the `java.world`
 package and propagate the fully qualified names of the original Java types
@@ -1837,8 +1840,8 @@ any such libraries that you also need to use from Cangjie code, you may
 want to mirror each library into its own Cangjie package.
 
 The _incremental mirroring_ process enables such segregation. You run
-the mirror generator _once for each target Cangjie package_ (set with the
-`--package-name` option, as usual), each time specifying two additional
+the mirror generator _once for each target Cangjie package_ (passed over via the
+`package.name` system property, as usual), each time specifying two additional
 parameters:
 
 1. A _complete_ list of Java packages to mirror into that specific
@@ -1912,7 +1915,7 @@ _`system-properties`_ must include the following:
   defined in the listed packages _and_ all their dependencies _except_
   for the dependencies that are already present in the import mappings file,
   if any. All those mirror types will be placed in a single Cangjie package
-  specified using the `--package-name` option (see above).
+  specified using the `package.name` system property (see above).
 
   This option may only be used in the single-jar mode.
 
@@ -1948,7 +1951,7 @@ java \
     -Dimports.config=./imports_config.txt \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path /path/to/android.jar \
-    --d src/cj \
+    -d src/cj \
     --class-path /path/to/android.jar:/path/to/android/SDK/platform/files/directory \
     /path/to/android.jar
 ```
@@ -1988,9 +1991,9 @@ Now we can pick a JDK API module that depends only on the `java.base`
 module, e.g. `java.xml`, and run the mirror generator again, changing
 only the values of two options:
 
-* Set the value of `--package-name` to `java.xml`
+* Change the value of `package.name` to `java.xml`
 
-* Set the value of `--package-list` to the pathname of a file
+* Change the value of `jar.mode.packages` to the pathname of a file
   containing the list of packages exported from the `java.xml` JDK API
   module:
 
@@ -2013,7 +2016,7 @@ java \
     -Dimports.config=./imports_config.txt \
     -jar ${CANGJIE_HOME}/tools/bin/java-mirror-gen.jar \
     --boot-class-path /path/to/android.jar \
-    --d src/cj \
+    -d src/cj \
     --class-path /path/to/android.jar:/path/to/android/SDK/platform/files/directory \
     /path/to/android.jar
 ```
@@ -2135,7 +2138,7 @@ Here is how depth limiting works exactly:
       get mirrored if included in the set of mirrored types during the
       limited-depth dependency closure calculation process described here.
 
-* The [command-line option](#jmg-command-line-syntax) `--closure-depth-limit`
+* The [command-line option](#jmg-command-line-syntax) `-Dgen.closure.depth`
   sets the depth limit for the explicitly specified class and interface
   types.
 
