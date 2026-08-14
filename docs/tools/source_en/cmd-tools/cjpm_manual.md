@@ -1228,12 +1228,12 @@ To specify `C` library configurations for different platforms, refer to [target]
 
 ```text
 [profile.build]
-lto = "full"  # Whether to enable `LTO` (Link Time Optimization) compilation mode. This feature is only supported on target platforms of `Linux/OpenHarmony/Android`.This setting has the same effect as the `level` configuration option of `[profile.build.lto]`.This string-type configuration will be deprecated in future versions. Please use the level option under `[profile.build.lto]` to enable LTO.
+lto = "full"  # Whether to enable `LTO` (Link Time Optimization) compilation mode. This feature is only supported on target platforms of `Linux/OpenHarmony/Android/iOS`.This setting has the same effect as the `level` configuration option of `[profile.build.lto]`.This string-type configuration will be deprecated in future versions. Please use the level option under `[profile.build.lto]` to enable LTO.
 performance_analysis = true # Enable compilation performance analysis.
 incremental = true # Whether to enable incremental compilation by default.
 
 [profile.build.lto]
-level = "full" # Whether to enable `LTO` (Link Time Optimization) compilation mode. This feature is only supported on target platforms of `Linux/OpenHarmony/Android`.
+level = "full" # Whether to enable `LTO` (Link Time Optimization) compilation mode. This feature is only supported on target platforms of `Linux/OpenHarmony/Android/iOS`.
 keep-pkg-visibility = ["pkgA", "pkgB", ...] # This configuration is used to control symbol hiding for `LTO` is enabled.
 
 [profile.build.combined]
@@ -1369,7 +1369,7 @@ Test configuration supports specifying options during test compilation and execu
 Specifies supported compilation options, including:
 
 - `compile-option`: A string containing additional `cjc` compilation options, supplementing the top-level `compile-option` field.
-- `lto`: Specifies whether to enable `LTO` optimization. Can be `thin` or `full`. This feature is only supported on target platforms of `Linux/OpenHarmony/Android`.
+- `lto`: Specifies whether to enable `LTO` optimization. Can be `thin` or `full`. This feature is only supported on target platforms of `Linux/OpenHarmony/Android/iOS`.
 - `mock`: Explicitly sets the `mock` mode. Possible values: `on`, `off`, `runtime-error`. The default value for `test`/`build` subcommands is `on`, and for `bench` subcommands, it is `runtime-error`.
 
 #### "profile.test.env"
