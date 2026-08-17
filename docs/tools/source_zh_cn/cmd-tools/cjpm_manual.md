@@ -1579,7 +1579,7 @@ hello = { path = "./src/" }
 
 ```text
 [profile.build]
-lto = "full"  # 是否开启 `LTO` （Link Time Optimization 链接时优化）优化编译模式，该功能仅支持编译目标为 `Linux/OpenHarmony/Android` 平台的场景效果同 `[profile.build.lto]` 的 `level` 配置项。后续该字符串类型配置项将被废除，请使用配置项 `[profile.build.lto]` 的 `level` 配置项开启LTO功能
+lto = "full"  # 是否开启 `LTO` （Link Time Optimization 链接时优化）优化编译模式，该功能仅支持编译目标为 `Linux/OpenHarmony/Android/iOS` 平台的场景效果同 `[profile.build.lto]` 的 `level` 配置项。后续该字符串类型配置项将被废除，请使用配置项 `[profile.build.lto]` 的 `level` 配置项开启LTO功能
 performance_analysis = true # 开启编译性能分析功能
 incremental = true # 是否默认开启增量编译
 cjc-jobs = 10 # 设置透传给 cjc 的并行数
@@ -1587,7 +1587,7 @@ enable-heuristic-parallelism = true # 开启启发式 cjc 并行配置
 compile-pipeline-parallel = true # 是否开启流水并行编译优化
 
 [profile.build.lto]
-level = "full" # 是否开启 `LTO` （Link Time Optimization 链接时优化）优化编译模式，该功能仅支持目标平台为 `Linux/OpenHarmony/Android` 平台
+level = "full" # 是否开启 `LTO` （Link Time Optimization 链接时优化）优化编译模式，该功能仅支持目标平台为 `Linux/OpenHarmony/Android/iOS` 平台
 keep-pkg-visibility = ["pkgA", "pkgB", ...] # 用于在LTO场景控制包中的符号可见性是否隐藏
 
 [profile.build.combined]
@@ -1737,7 +1737,7 @@ PATH = { value = "/usr/bin", splice-type = "prepend" }
 用于指定支持的编译选项，其列表如下:
 
 - `compile-option` 是一个包含附加 `cjc` 编译选项的字符串。为顶级 `compile-option` 字段做补充
-- `lto` 指定是否开启 `LTO` 优化编译模式，该值可为 `thin` 或 `full` ，该功能仅支持编译目标为 `Linux/OpenHarmony/Android` 平台的场景
+- `lto` 指定是否开启 `LTO` 优化编译模式，该值可为 `thin` 或 `full` ，该功能仅支持编译目标为 `Linux/OpenHarmony/Android/iOS` 平台的场景
 - `mock` 显式设置 `mock` 模式，可能的选项：`on`、`off`、`runtime-error` 。对 `test` / `build` 子命令默认值为 `on`，对于 `bench` 子命令默认值为 `runtime-error`
 
 #### profile.test.env
