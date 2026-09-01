@@ -156,10 +156,12 @@ Note: In the above output, b.B represents a subpackage named b.B in the module w
 Input: cjpm check
 Output:
 Error: can not find the following dependencies
-    pro1.xoo
-    pro1.yoo
-    pro2.zoo
+    pro1.xoo (imported by: package_a)
+    pro1.yoo (imported by: package_a, package_b)
+    pro2.zoo (imported by: package_c)
 ```
+
+Missing dependency names and their direct importer package names are printed in lexicographical order for stable diagnostics.
 
 ### update
 
