@@ -24,11 +24,11 @@
 - `parseExpr(input: Tokens): Expr`：将输入的 `Tokens` 解析为表达式节点。
 - `parseExprFragment(input: Tokens, startFrom!: Int64 = 0): (Expr, Int64)`：将输入 `Tokens` 的一个片段解析为表达式节点，片段从 `startFrom` 索引开始，解析可能只消耗从索引 `startFrom` 开始的片段的一部分，并返回第一个未被消耗的 `Token` 的索引（如果消耗了整个片段，返回值为 `input.size`）。
 - `parseDecl(input: Tokens, astKind!: String = "")`：将输入的 `Tokens` 解析为声明节点，`astKind` 为额外的设置，具体请参见《仓颉编程语言库 API》文档。
-- `parseDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int64)`：将输入 `Tokens` 的一个片段解析为声明节点，`startFrom` 参数和返回索引的含义和 `parseExpr` 相同。
+- `parseDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int64)`：将输入 `Tokens` 的一个片段解析为声明节点，`startFrom` 参数和返回索引的含义和 `parseExprFragment` 相同。
 - `parseType(input: Tokens): TypeNode`：将输入的 `Tokens` 解析为类型节点。
-- `parseTypeFragment(input: Tokens, startFrom!: Int64 = 0): (TypeNode, Int64)`：将输入 `Tokens` 的一个片段解析为类型节点，`startFrom` 参数和返回索引的含义和 `parseExpr` 相同。
+- `parseTypeFragment(input: Tokens, startFrom!: Int64 = 0): (TypeNode, Int64)`：将输入 `Tokens` 的一个片段解析为类型节点，`startFrom` 参数和返回索引的含义和 `parseExprFragment` 相同。
 - `parsePattern(input: Tokens): Pattern`：将输入的 `Tokens` 解析为模式节点。
-- `parsePatternFragment(input: Tokens, startFrom!: Int64 = 0): (Pattern, Int64)`：将输入 `Tokens` 的一个片段解析为模式节点，`startFrom` 参数和返回索引的含义和 `parseExpr` 相同。
+- `parsePatternFragment(input: Tokens, startFrom!: Int64 = 0): (Pattern, Int64)`：将输入 `Tokens` 的一个片段解析为模式节点，`startFrom` 参数和返回索引的含义和 `parseExprFragment` 相同。
 
 如果解析失败将抛出异常。这种解析方式适用于类型未知的代码片段，如果需要获取具体的子类型节点，需要将解析结果手动转换成具体的子类型。
 
