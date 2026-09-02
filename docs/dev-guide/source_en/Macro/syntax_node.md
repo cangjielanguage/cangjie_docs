@@ -24,11 +24,11 @@ The following functions are used to parse and construct arbitrary syntax nodes f
 - `parseExpr(input: Tokens): Expr`: Parses the input `Tokens` into an expression node.
 - `parseExprFragment(input: Tokens, startFrom!: Int64 = 0): (Expr, Int64)`: Parses a fragment of the input `Tokens` into an expression node, starting from the `startFrom` index. The parsing may consume only part of the fragment starting from `startFrom` and returns the index of the first unconsumed `Token` (if the entire fragment is consumed, the return value is `input.size`).
 - `parseDecl(input: Tokens, astKind!: String = "")`: Parses the input `Tokens` into a declaration node. `astKind` provides additional settings; refer to the *Cangjie Programming Language Library API* for details.
-- `parseDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int64)`: Parses a fragment of the input `Tokens` into a declaration node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExpr`.
+- `parseDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int64)`: Parses a fragment of the input `Tokens` into a declaration node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExprFragment`.
 - `parseType(input: Tokens): TypeNode`: Parses the input `Tokens` into a type node.
-- `parseTypeFragment(input: Tokens, startFrom!: Int64 = 0): (TypeNode, Int64)`: Parses a fragment of the input `Tokens` into a type node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExpr`.
+- `parseTypeFragment(input: Tokens, startFrom!: Int64 = 0): (TypeNode, Int64)`: Parses a fragment of the input `Tokens` into a type node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExprFragment`.
 - `parsePattern(input: Tokens): Pattern`: Parses the input `Tokens` into a pattern node.
-- `parsePatternFragment(input: Tokens, startFrom!: Int64 = 0): (Pattern, Int64)`: Parses a fragment of the input `Tokens` into a pattern node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExpr`.
+- `parsePatternFragment(input: Tokens, startFrom!: Int64 = 0): (Pattern, Int64)`: Parses a fragment of the input `Tokens` into a pattern node. The `startFrom` parameter and the meaning of the returned index are the same as in `parseExprFragment`.
 
 If parsing fails, an exception is thrown. This parsing method is suitable for code fragments of unknown types. If a specific subtype node is required, the parsing result must be manually cast to the corresponding subtype.
 
