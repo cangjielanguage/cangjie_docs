@@ -123,7 +123,7 @@ Cangjie internally provides the `@Attribute` tag, allowing developers to set att
 ```cangjie
 @Attribute[State]
 var cnt = 0 // identifier
-@Attribute[Binding]
+@Attribute["Binding"]
 var bcnt = 0 // string
 ```
 
