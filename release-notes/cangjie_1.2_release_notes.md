@@ -1,4 +1,4 @@
-# Cangjie 1.2 Release Notes
+# Cangjie 1.2.0 Release Notes
 
 ## 版本介绍
 
@@ -75,7 +75,7 @@
 
 ### 修复问题
 
-* `Android` 时区数据改用 `bionic property API`；
+* `Android` 时区数据改用 `bionic property API` 。
 * `loadTZData` 修复 `trimEnd` 空字符问题。
 * 修复 `android arm32` 寄存器上下文问题。
 * 修复 `finalizer` 线程结束问题。
