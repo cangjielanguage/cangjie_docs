@@ -295,7 +295,7 @@ Default enabled rules:
 - G.EXP.07 Place changing expressions on the left in comparisons.
 - G.ERR.01 Use proper error handling mechanisms.
 - G.ERR.02 Prevent sensitive data leaks via exceptions.
-- G.ERR.03 Avoid `getorthrow` with Option types.
+- G.ERR.03 Avoid `getorthrow` with Option types, except when `NoneValueException` is caught and handled.
 - G.ERR.04 Don't use `return`, `break`, `continue`, or exceptions to exit `finally`.
 - G.PKG.01 Avoid wildcard `import *`.
 - G.CON.01 Don't expose internal lock objects to untrusted code.
@@ -347,7 +347,7 @@ Optional rules (enable via `cjlint_rule_list.json`):
    | Syntax          | Keyword          | Rationale                                  |
    | --------------- | ---------------- | ------------------------------------------ |
    | Package Import  | Import           | Prevent arbitrary imports                  |
-   | Let Variables   | Let              | Use `var` exclusively                     |
+   | Let Variables   | Let              | Use `var` or `const` variables            |
    | Thread Creation | Spawn            | Disallow thread creation                   |
    | Synchronization | Synchronized     | Prevent deadlocks                          |
    | Main Function   | Main             | Disallow entry points                      |
